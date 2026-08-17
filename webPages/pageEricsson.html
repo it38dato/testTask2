@@ -1,0 +1,445 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <!-- ЛЕВАЯ КОЛОНКА: Только Поиск БС -->
+    <div class="col-5">
+        <div class="card">
+            <div class="card-header">Введите Имя БС</div>
+            <div class="card-body">
+                <form method="POST" action="" style="margin: 0;">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" name="NanemSS" class="form-control" placeholder="Имя БС (например, VV0203)" value="" style="border-radius: 4px 0 0 4px;">
+                        <button class="btn btn-primary" type="submit" style="border-radius: 0 4px 4px 0; background-color: #0d6efd; color: white;">Отправить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ПРАВАЯ КОЛОНКА: Объединенный блок со вкладками -->
+    <div class="col-7">
+        <div class="card">
+            <!-- Шапка с переключателями вкладок -->
+            <ul class="tabs-header">
+                <li><a class="tab-link active" onclick="openTab(event, 'info-tab')">Info Site</a></li>
+                <li><a class="tab-link" onclick="openTab(event, 'ran-tab')">RAN Data</a></li>
+                <li><a class="tab-link" onclick="openTab(event, 'omt-tab')">OMT</a></li>
+            </ul>
+            <!-- Вкладка 2: Info Site -->
+            <div id="info-tab" class="tab-content active" style="padding: 0;">
+                <table class="table" style="margin: 0;">
+                    <tbody>
+                        {% for listIndex in listMain.1 %}
+                        <tr><td style="width: 25%; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Имя сайта:</td><td style="border-bottom: 1px solid #eee;">{{ listIndex.0 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Адрес:</td><td style="border-bottom: 1px solid #eee;">{{ listIndex.2 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Тип:</td><td style="border-bottom: none;">{{ listIndex.1 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Plan:</td><td style="border-bottom: none;">{{ listIndex.4 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Status:</td><td style="border-bottom: none;">{{ listIndex.3 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Region:</td><td style="border-bottom: none;">{{ listIndex.5 }} | {{ listIndex.6 }} | {{ listIndex.7 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">ipPlan:</td><td style="border-bottom: none;"><a href="{{ listIndex.8 }}">{{ listIndex.8 }}</a></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Вкладка 3: RAN Data -->
+            <div id="ran-tab" class="tab-content" style="padding: 0;">
+                <table class="table" style="margin: 0;">
+                    <tbody>
+                        {% with listIndex=listMain.2|first %}
+                        <tr><td style="width: 25%; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">BSC:</td><td style="font-family: monospace; border-bottom: 1px solid #eee;">{{ listIndex.1 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">LAC2G:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.11 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">MCC:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.16 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">MNC2G:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.17 }}</td></tr>
+                        {% endwith %}
+                        {% with listIndex=listMain.3|first %}
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">RNC:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.1 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">RAC3G:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.7 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">URA:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.6 }}</td></tr>
+                        {% endwith %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Вкладка 1: SSH Доступ -->
+            <div id="omt-tab" class="tab-content" style="background-color: #fafafa;">
+                <p style="margin-bottom: 8px;"><strong>IP APG:</strong> <code style="font-size: 14px;"></code></p>
+                <p style="margin-bottom: 15px;"><strong>Port APG:</strong> <code style="font-size: 14px;">22</code></p>
+                <p style="margin-bottom: 15px;"><strong>IP BSC:</strong> <code style="font-size: 14px;">192.168.169.59</code></p>
+                <p style="margin-bottom: 15px;"><strong>Port BSC:</strong> <code style="font-size: 14px;">1200x</code></p>
+                <p style="margin-bottom: 15px;"><strong>BSC MO:</strong> <code style="font-size: 14px;">
+                    {% with listIndex=listMain.2|first %}
+                        {{ listIndex.3 }}
+                    {% endwith %}
+                </code></p>
+                <p style="margin-bottom: 15px;"><strong>Password:</strong> <code style="font-size: 14px;">OSS12345</code></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- НИЖНИЙ БЛОК: Таблица секторов 4G -->
+<div class="row">
+    <div class="col-12">
+        <ul class="tabs-header">
+            <li><a class="tab-link active" onclick="openTab(event, 'DuData-tab')">DU Data</a></li>
+            <li><a class="tab-link" onclick="openTab(event, 'DuHwData-tab')">DU HW data</a></li>
+            <li><a class="tab-link" onclick="openTab(event, 'IpPlan-tab')">IP_Plan_Line_1</a></li>
+            <li><a class="tab-link" onclick="openTab(event, 'BbHwData-tab')">BB HW data</a></li>
+            <li><a class="tab-link" onclick="openTab(event, 'BbLicense-tab')">BB License</a></li>
+        </ul>
+        <div id="DuData-tab" class="tab-content active" style="padding: 0;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">DU Name</th>
+                                <th style="padding: 12px; text-align: center;">OAM</th>
+                                <th style="padding: 12px; text-align: center;">Link</th>
+                                <th style="padding: 12px; text-align: center;">EthernetPort</th>
+                                <th style="padding: 12px; text-align: center;">OperatingMode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.5 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;"><a href="{{ listIndex.4 }}">{{ listIndex.4 }}</a></td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="DuHwData-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">Name</th>
+                                <th style="padding: 12px; text-align: center;">DU</th>
+                                <th style="padding: 12px; text-align: center;">1</th>
+                                <th style="padding: 12px; text-align: center;">2</th>
+                                <th style="padding: 12px; text-align: center;">3</th>
+                                <th style="padding: 12px; text-align: center;">4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.8 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% for listIndex in listMain.9 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="IpPlan-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;"></th>
+                                <th style="padding: 12px; text-align: center;">OAM 3G</th>
+                                <th style="padding: 12px; text-align: center;">OAM 4G</th>
+                                <th style="padding: 12px; text-align: center;">ABIS</th>
+                                <th style="padding: 12px; text-align: center;">IUB</th>
+                                <th style="padding: 12px; text-align: center;">S1</th>
+                                <th style="padding: 12px; text-align: center;">OAM 2G</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.6 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">VLAN</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.10 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.13 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.16 }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">Port</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.11 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.14 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.17 }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">GW</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.12 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.15 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.18 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="BbHwData-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">BS Name</th>
+                                <th style="padding: 12px; text-align: center;">BB-1</th>
+                                <th style="padding: 12px; text-align: center;">A</th>
+                                <th style="padding: 12px; text-align: center;">B</th>
+                                <th style="padding: 12px; text-align: center;">C</th>
+                                <th style="padding: 12px; text-align: center;">D</th>
+                                <th style="padding: 12px; text-align: center;">E</th>
+                                <th style="padding: 12px; text-align: center;">F</th>
+                                <th style="padding: 12px; text-align: center;">G</th>
+                                <th style="padding: 12px; text-align: center;">H</th>
+                                <th style="padding: 12px; text-align: center;">J</th>
+                                <th style="padding: 12px; text-align: center;">K</th>
+                                <th style="padding: 12px; text-align: center;">L</th>
+                                <th style="padding: 12px; text-align: center;">M</th>
+                                <th style="padding: 12px; text-align: center;">N</th>
+                                <th style="padding: 12px; text-align: center;">P</th>
+                                <th style="padding: 12px; text-align: center;">Q</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.7 %}
+                            <tr>
+                                <td style="padding: 12px;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.10 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.11 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.12 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.13 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.14 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.15 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.16 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="BbLicense-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">CapacityState</th>
+                                <th style="padding: 12px; text-align: center;">description</th>
+                                <th style="padding: 12px; text-align: center;">CapacityLevel</th>
+                                <th style="padding: 12px; text-align: center;">Capacity</th>
+                                <th style="padding: 12px; text-align: center;">Free</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.10 %}
+                            <tr>
+                                <td style="padding: 12px;">CXC4012037</td>
+                                <td style="padding: 12px;">GSM Cell Carrier (TRX) ERS</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }} TRX</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px;">CXC4021010</td>
+                                <td style="padding: 12px;">WCDMA Number of Cell Carriers</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px;"></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px;">CXC4011622</td>
+                                <td style="padding: 12px;">5 MHz Sector Carriers</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.11 }} MHz</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px;">CXC4012338</td>
+                                <td style="padding: 12px;">OutputPower 20W Step</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.10 }} W</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <ul class="tabs-header">
+            <li><a class="tab-link active" onclick="openTab(event, '2g-tab')">2G</a></li>
+            <li><a class="tab-link" onclick="openTab(event, '3g-tab')">3G</a></li>
+            <li><a class="tab-link" onclick="openTab(event, '4g-tab')">4G</a></li>
+        </ul>
+        <div id="2g-tab" class="tab-content active" style="padding: 0;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">Cell</th>
+                                <th style="padding: 12px; text-align: center;">bsc</th>
+                                <th style="padding: 12px; text-align: center;">sys</th>
+                                <th style="padding: 12px; text-align: center;">otg</th>
+                                <th style="padding: 12px; text-align: center;">stg</th>
+                                <th style="padding: 12px; text-align: center;">G12Trxc</th>
+                                <th style="padding: 12px; text-align: center;">dchNo 0</th>
+                                <th style="padding: 12px; text-align: center;">dchNo 1</th>
+                                <th style="padding: 12px; text-align: center;">bcchNo</th>
+                                <th style="padding: 12px; text-align: center;">ncc</th>
+                                <th style="padding: 12px; text-align: center;">bcc</th>
+                                <th style="padding: 12px; text-align: center;">lac</th>
+                                <th style="padding: 12px; text-align: center;">ci</th>
+                                <th style="padding: 12px; text-align: center;">G31Trx</th>
+                                <th style="padding: 12px; text-align: center;">sigDel</th>
+                                <th style="padding: 12px; text-align: center;">state</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.2 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.10 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.11 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.12 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.13 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.14 }}</td>
+                                <td style="padding: 12px;"><span class="status-unlocked">{{ listIndex.15 }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="3g-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">sectorName</th>
+                                <th style="padding: 12px; text-align: center;">rnc</th>
+                                <th style="padding: 12px; text-align: center;">sc</th>
+                                <th style="padding: 12px; text-align: center;">uarfcnDl</th>
+                                <th style="padding: 12px; text-align: center;">tCell</th>
+                                <th style="padding: 12px; text-align: center;">lac</th>
+                                <th style="padding: 12px; text-align: center;">ura</th>
+                                <th style="padding: 12px; text-align: center;">rac</th>
+                                <th style="padding: 12px; text-align: center;">cpichPower</th>
+                                <th style="padding: 12px; text-align: center;">power</th>
+                                <th style="padding: 12px; text-align: center;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.3 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px;"><span class="status-unlocked">{{ listIndex.10 }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="4g-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">dlChannelBandwidth</th>
+                                <th style="padding: 12px; text-align: center;">tac</th>
+                                <th style="padding: 12px; text-align: center;">Sectorname</th>
+                                <th style="padding: 12px; text-align: center;">earfcndl</th>
+                                <th style="padding: 12px; text-align: center;">PCI</th>
+                                <th style="padding: 12px; text-align: center;">cellRange</th>
+                                <th style="padding: 12px; text-align: center;">RSI</th>
+                                <th style="padding: 12px; text-align: center;">configuredMaxTxPower</th>
+                                <th style="padding: 12px; text-align: center;">administrativeState</th>
+                                <th style="padding: 12px; text-align: center;">Enodeb</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.4 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;"><span class="status-unlocked">{{ listIndex.8 }}</span></td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.9 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

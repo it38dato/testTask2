@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">Нажмите на кнопку обновить</div>
+            <div class="card-body">
+                <p>
+                    Для запуска скрипта необходимы:<br>
+                    - Доступ к сетевой папке L:\<br>
+                    - настроить Яндекс и Яндекс драйвер. (Скачать свежую версию яндекс драйвера можно в <a href="https://github.com/yandex/YandexDriver/releases?ysclid=mkxjo1segh657896235">гитхабе</a>)
+                </p>
+                <form method="POST" action="" style="margin: 0;">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <button class="btn btn-primary" type="submit" style="border-radius: 0 4px 4px 0; background-color: #0d6efd; color: white;">Обновить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <ul class="tabs-header">
+            <li><a class="tab-link active" onclick="openTab(event, 'status-tab')">Status</a></li>
+            <li><a class="tab-link" onclick="openTab(event, 'diff-tab')">Сравнение таблиц</a></li>
+        </ul>
+        <div id="status-tab" class="tab-content active" style="padding: 0;">
+            <div class="card">
+                <div class="card-body" style="padding: 0;">
+                    <p>
+                        <strong>Place:</strong> L:\OESS\BSS\Nokia\Backup\Portal<br>
+                        Копирование таблицы из сайта BARS в Excel формат:<br><strong>Status:</strong> {{ listMain.0.0 }}, {{ listMain.0.1 }}<br>
+                        Сортировка таблицы из сайта BARS:<br><strong>Status:</strong> {{ listMain.0.2 }}, {{ listMain.0.3 }}<br>
+                        Удаление таблицы Info из БД:<br><strong>Status:</strong> {{ listMain.2.0 }}<br>
+                        Загрузка таблицы Info в БД:<br><strong>Status:</strong> {{ listMain.2.1 }}<br>
+                        Бэкап таблиц:<br><strong>Status:</strong> {{ listMain.2.2 }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="diff-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body" style="padding: 0;">
+                    <table class="table table-striped" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">Параметр</th>
+                                <th style="padding: 12px; text-align: center;">До изменений БД</th>
+                                <th style="padding: 12px; text-align: center;">После изменений БД</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.1 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

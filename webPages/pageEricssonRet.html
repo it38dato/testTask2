@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Первый HTML-сегмент -->
+<div class="row g-0 text-center" id="bb3g">
+    <div class="col-6 col-md-12">
+        <div class="card">
+        <div class="card-body">
+            <h5>Ret</h5>
+        </div>
+        </div>        
+        <div class="card">
+        <div class="card-body">
+            <h5>Введите Имя БС:</h5>
+            <form method="post">
+                {% csrf_token %}
+                <input type="text" name="Reg" placeholder="Введите регион"><br>
+                <input type="text" name="NS" placeholder="Введите номерБС"><br>
+                <input type="text" name="BB" placeholder="Введите BB"><br>
+                <button type="submit">Отправить</button>
+            </form>
+        </div>
+        </div>
+        <div class="card">
+        <div class="card-body">
+            <table>
+                <tbody>
+                    {% for listIndex in listMain.0 %} 
+                    <tr>
+                        <td>
+                            Имя БС
+                        </td>
+                        <td>
+                            {{ listIndex.26 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        </div>
+        <div class="card">
+        <div class="card-body">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            ENM
+                        </td>
+                        <td>
+                            &nbsp;
+                        </td>
+                        <td colspan="3">
+                            1
+                        </td>
+                        <td colspan="3">
+                            2
+                        </td>
+                        <td colspan="3">
+                            3
+                        </td>
+                        <td colspan="3">
+                            4
+                        </td>
+                        <td colspan="3">
+                            5
+                        </td>
+                        <td colspan="3">
+                            6
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Управляющая RRU
+                        </td>
+                        <td>
+                            AntennaUnitGroup
+                        </td>
+                        <td>
+                            serialNumber
+                        </td>
+                        <td>
+                            Sector name
+                        </td>
+                        <td>
+                            Tilt
+                        </td>
+                        <td>
+                            serialNumber
+                        </td>
+                        <td>
+                            Sector name
+                        </td>
+                        <td>
+                            Tilt
+                        </td>
+                        <td>
+                            serialNumber
+                        </td>
+                        <td>
+                            Sector name
+                        </td>
+                        <td>
+                            Tilt
+                        </td>
+                        <td>
+                            serialNumber
+                        </td>
+                        <td>
+                            Sector name
+                        </td>
+                        <td>
+                            Tilt
+                        </td>
+                        <td>
+                            serialNumber
+                        </td>
+                        <td>
+                            Sector name
+                        </td>
+                        <td>
+                            Tilt
+                        </td>
+                        <td>
+                            serialNumber
+                        </td>
+                        <td>
+                            Sector name
+                        </td>
+                        <td>
+                            Tilt
+                        </td>
+                    </tr>
+                    {% for listIndex in listMain.1 %} 
+                    <tr>
+                        <td>
+                            RRU-{{ listIndex.1 }}-1
+                        </td>
+                        <td>
+                            {{ listIndex.1 }}
+                        </td>
+                        <td>
+                            {{ listIndex.2 }}
+                        </td>
+                        <td>
+                            {{ listIndex.3 }}
+                        </td>
+                        <td>
+                            {{ listIndex.4 }}
+                        </td>
+                        <td>
+                            {{ listIndex.5 }}
+                        </td>
+                        <td>
+                            {{ listIndex.6 }}
+                        </td>
+                        <td>
+                            {{ listIndex.7 }}
+                        </td>
+                        <td>
+                            {{ listIndex.8 }}
+                        </td>
+                        <td>
+                            {{ listIndex.9 }}
+                        </td>
+                        <td>
+                            {{ listIndex.10 }}
+                        </td>
+                        <td>
+                            {{ listIndex.11 }}
+                        </td>
+                        <td>
+                            {{ listIndex.12 }}
+                        </td>
+                        <td>
+                            {{ listIndex.13 }}
+                        </td>
+                        <td>
+                            {{ listIndex.14 }}
+                        </td>
+                        <td>
+                            {{ listIndex.15 }}
+                        </td>
+                        <td>
+                            {{ listIndex.16 }}
+                        </td>
+                        <td>
+                            {{ listIndex.17 }}
+                        </td>
+                        <td>
+                            {{ listIndex.18 }}
+                        </td>
+                        <td>
+                            {{ listIndex.19 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>            
+        </div>
+        </div>
+    </div>
+</div>
+{% for j_key, j_value in jsonContents.items %} 
+<div class="row g-0 text-center" id="{{ j_key }}">
+    <div class="col-6 col-md-3">
+        <h3>{{ j_key }}</h3>
+        <div class="card">
+        {% for item in j_value %}
+        <div class="card-body">
+            {% if item.idcard == 'MiniCard' %}
+            <h5>{{ item.title|safe }}</h5>
+            <p>{{ item.content|safe }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-9">
+        <div class="card">
+        {% for item in j_value %}
+        <div class="card-body">   
+            {% if item.idcard == 'Card' %}
+            <h5>{{ item.title|safe }}</h5>
+            <p>{{ item.content|safe }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

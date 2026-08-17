@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <!-- ЛЕВАЯ КОЛОНКА: Только Поиск БС -->
+    <div class="col-5">
+        <div class="card">
+            <div class="card-header">Введите Имя БС</div>
+            <div class="card-body">
+                <form method="POST" action="" style="margin: 0;">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <input type="text" name="NanemSS" class="form-control" placeholder="Имя БС (например, IR2663)" value="" style="border-radius: 4px 0 0 4px;">
+                        <button class="btn btn-primary" type="submit" style="border-radius: 0 4px 4px 0; background-color: #0d6efd; color: white;">Отправить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ПРАВАЯ КОЛОНКА: Объединенный блок со вкладками -->
+    <div class="col-7">
+        <div class="card">
+            <!-- Шапка с переключателями вкладок -->
+            <ul class="tabs-header">
+                <li><a class="tab-link active" onclick="openTab(event, 'info-tab')">Info Site</a></li>
+                <li><a class="tab-link" onclick="openTab(event, 'ssh-tab')">SSH Доступ</a></li>
+                <li><a class="tab-link" onclick="openTab(event, 'ran-tab')">RAN Data</a></li>
+                <li><a class="tab-link" onclick="openTab(event, '2gHW-tab')">2g Hw Data</a></li>
+            </ul>
+
+            <!-- Вкладка 1: Info Site -->
+            <div id="info-tab" class="tab-content active" style="padding: 0;">
+                <table class="table" style="margin: 0;">
+                    <tbody>
+                        {% for listIndex in listMain.1 %}
+                        <tr><td style="width: 25%; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Имя сайта:</td><td style="border-bottom: 1px solid #eee;">{{ listIndex.0 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: 1px solid #eee;">Адрес:</td><td style="border-bottom: 1px solid #eee;">{{ listIndex.2 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Тип:</td><td style="border-bottom: none;">{{ listIndex.1 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">План:</td><td style="border-bottom: none;">{{ listIndex.4 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Статус:</td><td style="border-bottom: none;">{{ listIndex.3 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">Регион:</td><td style="border-bottom: none;">{{ listIndex.5 }} | {{ listIndex.6 }} | {{ listIndex.7 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">ipPlan:</td><td style="border-bottom: none;"><a href="{{ listIndex.8 }}">{{ listIndex.8 }}</a></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Вкладка 2: SSH Доступ -->
+            <div id="ssh-tab" class="tab-content" style="background-color: #fafafa;">
+                {% for listIndex in listMain.2 %}
+                <p style="margin-bottom: 8px;"><strong>Логин:</strong> <code style="font-size: 14px;">toor4nsn</code></p>
+                <p style="margin-bottom: 15px;"><strong>Пароль:</strong> <code style="font-size: 14px;">oZPS0POrRieRtu</code></p>
+                <p style="margin-bottom: 15px;"><strong>Ping Abis:</strong> <code style="font-size: 14px;">
+                    ping -s 1472 -c 100 -Mdo
+                    {% with first_item=listMain.4|first %}
+                        {{ first_item.5 }}
+                    {% endwith %}
+                </code></p>
+                <p style="margin-bottom: 15px;"><strong>Ping S1:</strong> <code style="font-size: 14px;">
+                    ping -s 1472 -c 100 -Mdo
+                    {% for listIndex1 in listMain.1 %}
+                        {{ listIndex1.10 }}
+                    {% endfor %}
+                </code></p>
+                <p style="margin-bottom: 15px;"><strong>Traceroute Abis:</strong> <code style="font-size: 14px;">
+                    traceroute
+                    {% with first_item=listMain.4|first %}
+                        {{ first_item.5 }}
+                    {% endwith %}
+                </code></p>
+                <p style="margin-bottom: 15px;"><strong>Traceroute S1:</strong> <code style="font-size: 14px;">
+                    traceroute
+                    {% for listIndex1 in listMain.1 %}
+                        {{ listIndex1.10 }}
+                    {% endfor %}
+                </code></p>
+                {% endfor %}
+            </div>
+            <!-- Вкладка 3: RAN Data -->
+            <div id="ran-tab" class="tab-content" style="padding: 0;">
+                <table class="table" style="margin: 0;">
+                    <tbody>
+                        {% for listIndex in listMain.2 %}
+                        <tr><td style="width: 25%; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">RNC:</td><td style="font-family: monospace; border-bottom: 1px solid #eee;">{{ listIndex.0 }} | {{ listIndex.1 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">BSC:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.2 }} | {{ listIndex.3 }}</td></tr>
+                        <tr><td style="font-weight: bold; color: #666; border-bottom: none;">LAC/RAC3G/URA:</td><td style="font-family: monospace; border-bottom: none;">{{ listIndex.4 }} | {{ listIndex.5 }} | {{ listIndex.6 }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div id="2gHW-tab" class="tab-content" style="padding: 0;">
+                <table class="table" style="margin: 0;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 25%; font-weight: bold; color: #666; border-bottom: 1px solid #eee;"></td>
+                            {% with listIndex1=listMain.4|first %}
+                            <td>
+                                BCF-{{ listIndex1.2 }}
+                            </td>
+                            {% endwith %}
+                        </tr>
+                        {% for listIndex in listMain.4 %}
+                        <tr><td style="width: 25%; font-weight: bold; color: #666; border-bottom: 1px solid #eee;">{{ listIndex.9 }}</td><td style="font-family: monospace; border-bottom: 1px solid #eee;">{{ listIndex.7 }}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- НИЖНИЙ БЛОК: Таблица секторов 4G -->
+<div class="row">
+    <div class="col-12">
+        <ul class="tabs-header">
+            <li><a class="tab-link active" onclick="openTab(event, 'DuName-tab')">DU Name</a></li>
+            <li><a class="tab-link" onclick="openTab(event, 'sshAct-tab')">sshAct</a></li>
+            <li>
+                <a class="tab-link" onclick="openTab(event, 'mrbts1-tab')">
+                    MRBTS Connection Map
+                    {% with listIndex=listMain.5|first %}
+                        {{ listIndex.1 }}
+                    {% endwith %}
+                </a>
+            </li>
+            <li>
+                <a class="tab-link" onclick="openTab(event, 'mrbts2-tab')">
+                    {% with listIndex=listMain.5|first %}
+                        {{ listIndex.8 }}
+                    {% endwith %}
+                </a>
+            </li>
+            <li>
+                <a class="tab-link" onclick="openTab(event, 'mrbts3-tab')">
+                    {% with listIndex=listMain.5|first %}
+                        {{ listIndex.15 }}
+                    {% endwith %}
+                </a>
+            </li>
+            <li>
+                <a class="tab-link" onclick="openTab(event, 'mrbts4-tab')">
+                    {% with listIndex=listMain.5|first %}
+                        {{ listIndex.22 }}
+                    {% endwith %}
+                </a>
+            </li>
+        </ul>
+        <div id="DuName-tab" class="tab-content active" style="padding: 0;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">mrbts</th>
+                                <th style="padding: 12px; text-align: center;">oam</th>
+                                <th style="padding: 12px; text-align: center;">http</th>
+                                <th style="padding: 12px; text-align: center;">connectorLabel</th>
+                                <th style="padding: 12px; text-align: center;">detectedSpeed</th>
+                                <th style="padding: 12px; text-align: center;">dn</th>
+                                <th style="padding: 12px; text-align: center;">getRet</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.3 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;"><a href="http://{{ listIndex.1 }}">http://{{ listIndex.1 }}</a></td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="sshAct-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">mrbts</th>
+                                <th style="padding: 12px; text-align: center;">sshAct</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.3 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">
+                                    <p>
+                                    <span>&lt;?</span><span>xml</span><span> </span><span>version</span><span>=</span>
+                                    <span>"1.0"</span><span> </span><span>encoding</span><span>=</span><span>"UTF-8"</span>
+                                    <span>?&gt;&lt;!</span><span>DOCTYPE</span><span> </span><span>raml</span><span> </span>
+                                    <span>SYSTEM</span><span> </span><span>'raml20.dtd'</span><span>&gt;&lt;</span>
+                                    <span>raml</span><span> </span><span>version</span><span>=</span><span>"2.0"</span>
+                                    <span> </span><span>xmlns</span><span>=</span><span>"raml20.xsd"</span><span>&gt;&lt;</span>
+                                    <span>cmData</span><span> </span><span>type</span><span>=</span><span>"plan"</span>
+                                    <span> </span><span>scope</span><span>=</span><span>"all"</span><span> </span>
+                                    <span>name</span><span>=</span><span>""</span><span> </span><span>id</span>
+                                    <span>=</span><span>""</span><span>&gt;&lt;</span><span>header</span><span>&gt;&lt;</span>
+                                    <span>log</span><span> </span><span>dateTime</span><span>=</span><span>""</span>
+                                    <span> </span><span>action</span><span>=</span><span>"created"</span><span> </span>
+                                    <span>appInfo</span><span>=</span><span>"PlanExporter"</span><span>&gt;</span>
+                                    <span>UIValues are used</span><span>&lt;/</span><span>log</span><span>&gt;&lt;/</span>
+                                    <span>header</span><span>&gt;&lt;</span><span>managedObject</span><span> </span>
+                                    <span>class</span><span>=</span><span>"FEATCADM"</span><span> </span>
+                                    <span>version</span><span>=</span><span>"MNL21B_2105_002"</span><span> </span>
+                                    <span>distName</span><span>=</span>
+                                    <span>"{{ listIndex.4 }}/MNL-1/MNLENT-1/FEATCADM-1"</span><span> </span><span>id</span>
+                                    <span>=</span><span>""</span><span> </span><span>operation</span><span>=</span>
+                                    <span>"update"</span><span>&gt;&lt;</span><span>p</span><span> </span><span>name</span>
+                                    <span>=</span><span>"systemAcctPermEnable"</span><span>&gt;</span><span>false</span>
+                                    <span>&lt;/</span><span>p</span><span>&gt;&lt;/</span><span>managedObject</span><span>&gt;&lt;</span>
+                                    <span>managedObject</span><span> </span><span>class</span><span>=</span>
+                                    <span>"SECADM"</span><span> </span><span>version</span><span>=</span>
+                                    <span>"MNL21B_2105_002"</span><span> </span><span>distName</span><span>=</span>
+                                    <span>"{{ listIndex.4 }}/MNL-1/MNLENT-1/SECADM-1"</span><span> </span>
+                                    <span>id</span><span>=</span><span>""</span><span> </span><span>operation</span>
+                                    <span>=</span><span>"update"</span><span>&gt;&lt;</span><span>p</span><span> </span>
+                                    <span>name</span><span>=</span><span>"actServiceAccountSsh"</span><span>&gt;</span>
+                                    <span>true</span><span>&lt;/</span><span>p</span><span>&gt;&lt;/</span>
+                                    <span>managedObject</span><span>&gt;&lt;/</span><span>cmData</span><span>&gt;&lt;/</span>
+                                    <span>raml</span><span>&gt;</span>
+                                </p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="mrbts1-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body  table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;"></th>
+                                <th style="padding: 12px; text-align: center;">firstEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">secondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">snSecondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">cellList</th>
+                                <th style="padding: 12px; text-align: center;">linkCapacity</th>
+                                <th style="padding: 12px; text-align: center;">fiberLength</th>
+                                <th style="padding: 12px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.5 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="mrbts2-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;"></th>
+                                <th style="padding: 12px; text-align: center;">firstEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">secondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">snSecondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">cellList</th>
+                                <th style="padding: 12px; text-align: center;">linkCapacity</th>
+                                <th style="padding: 12px; text-align: center;">fiberLength</th>
+                                <th style="padding: 12px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.5 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.10 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.11 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.12 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.13 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.14 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="mrbts3-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;"></th>
+                                <th style="padding: 12px; text-align: center;">firstEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">secondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">snSecondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">cellList</th>
+                                <th style="padding: 12px; text-align: center;">linkCapacity</th>
+                                <th style="padding: 12px; text-align: center;">fiberLength</th>
+                                <th style="padding: 12px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.5 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.15 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.17 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.18 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.19 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.20 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.21 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="mrbts4-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;"></th>
+                                <th style="padding: 12px; text-align: center;">firstEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">secondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">snSecondEndpoint</th>
+                                <th style="padding: 12px; text-align: center;">cellList</th>
+                                <th style="padding: 12px; text-align: center;">linkCapacity</th>
+                                <th style="padding: 12px; text-align: center;">fiberLength</th>
+                                <th style="padding: 12px; text-align: center;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.5 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.23 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.24 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.25 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.26 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.27 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.28 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <ul class="tabs-header">
+            <li><a class="tab-link active" onclick="openTab(event, '2g-tab')">2G</a></li>
+            <li><a class="tab-link" onclick="openTab(event, '3g-tab')">3G</a></li>
+            <li><a class="tab-link" onclick="openTab(event, '4g-tab')">4G</a></li>
+        </ul>
+        <div id="2g-tab" class="tab-content active" style="padding: 0;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">name</th>
+                                <th style="padding: 12px; text-align: center;">bsc</th>
+                                <th style="padding: 12px; text-align: center;">Subtype</th>
+                                <th style="padding: 12px; text-align: center;">bcf</th>
+                                <th style="padding: 12px; text-align: center;">BtsIp</th>
+                                <th style="padding: 12px; text-align: center;">OmuSig</th>
+                                <th style="padding: 12px; text-align: center;">synch</th>
+                                <th style="padding: 12px; text-align: center;">clockSource</th>
+                                <th style="padding: 12px; text-align: center;">Satellite</th>
+                                <th style="padding: 12px; text-align: center;">lapd</th>
+                                <th style="padding: 12px; text-align: center;">SBTSId</th>
+                                <th style="padding: 12px; text-align: center;">bts</th>
+                                <th style="padding: 12px; text-align: center;">sectorId</th>
+                                <th style="padding: 12px; text-align: center;">lac</th>
+                                <th style="padding: 12px; text-align: center;">rac</th>
+                                <th style="padding: 12px; text-align: center;">bcc</th>
+                                <th style="padding: 12px; text-align: center;">ncc</th>
+                                <th style="padding: 12px; text-align: center;">band</th>
+                                <th style="padding: 12px; text-align: center;">bcch</th>
+                                <th style="padding: 12px; text-align: center;">hop</th>
+                                <th style="padding: 12px; text-align: center;">mal</th>
+                                <th style="padding: 12px; text-align: center;">hsn</th>
+                                <th style="padding: 12px; text-align: center;">diversity</th>
+                                <th style="padding: 12px; text-align: center;">cMax</th>
+                                <th style="padding: 12px; text-align: center;">State</th>
+                                <th style="padding: 12px; text-align: center;">$dn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.6 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.10 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.11 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.12 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.13 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.14 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.15 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.16 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.17 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.18 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.19 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.20 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.21 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.22 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.23 }}</td>
+                                <td style="padding: 12px;"><span class="status-unlocked">{{ listIndex.24 }}</span></td>
+                                <td style="padding: 12px;">{{ listIndex.25 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="3g-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">name</th>
+                                <th style="padding: 12px; text-align: center;">Cell_ID</th>
+                                <th style="padding: 12px; text-align: center;">UARFCN</th>
+                                <th style="padding: 12px; text-align: center;">PriScrCode</th>
+                                <th style="padding: 12px; text-align: center;">SectorID</th>
+                                <th style="padding: 12px; text-align: center;">LAC</th>
+                                <th style="padding: 12px; text-align: center;">RAC</th>
+                                <th style="padding: 12px; text-align: center;">URA</th>
+                                <th style="padding: 12px; text-align: center;">tcell</th>
+                                <th style="padding: 12px; text-align: center;">PtxCellMax</th>
+                                <th style="padding: 12px; text-align: center;">PtxPrimaryCPICH</th>
+                                <th style="padding: 12px; text-align: center;">State</th>
+                                <th style="padding: 12px; text-align: center;">$dn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.7 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.0 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.3 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.9 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.10 }}</td>
+                                <td style="padding: 12px;"><span class="status-unlocked">{{ listIndex.11 }}</span></td>
+                                <td style="padding: 12px;">{{ listIndex.12 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="4g-tab" class="tab-content" style="background-color: #fafafa;">
+            <div class="card">
+                <div class="card-body table-responsive" style="padding: 0;">
+                    <table class="table table-striped table-centered" style="margin: 0; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #212529; color: white;">
+                                <th style="padding: 12px; text-align: center;">Site name</th>
+                                <th style="padding: 12px; text-align: center;">Pmax</th>
+                                <th style="padding: 12px; text-align: center;">Bw</th>
+                                <th style="padding: 12px; text-align: center;">earfcnDL</th>
+                                <th style="padding: 12px; text-align: center;">PCI</th>
+                                <th style="padding: 12px; text-align: center;">PRACH</th>
+                                <th style="padding: 12px; text-align: center;">CellRange</th>
+                                <th style="padding: 12px; text-align: center;">Tac</th>
+                                <th style="padding: 12px; text-align: center;">Site name</th>
+                                <th style="padding: 12px; text-align: center;">eci</th>
+                                <th style="padding: 12px; text-align: center;">mimo</th>
+                                <th style="padding: 12px; text-align: center;">State</th>
+                                <th style="padding: 12px; text-align: center;">$dn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for listIndex in listMain.8 %}
+                            <tr>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.15 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.1 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.2 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.4 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.5 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.6 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.7 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.8 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.15 }}</td>
+                                <td style="padding: 12px;">{{ listIndex.16 }}</td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.17 }}</td>
+                                <td style="padding: 12px;"><span class="status-unlocked">{{ listIndex.18 }}</span></td>
+                                <td style="padding: 12px; font-weight: bold;">{{ listIndex.19 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+.env
+db.sqlite3
+.idea
+backups/*
+scripts/__pycache__
+scripts/querryErcicsson.ddl
+scripts/querryNokia.ddl
+scripts/procMysql.py
+webAdminTemplate/__pycache__
+webApp/__pycache__
+webApp/migrations/__pycache__

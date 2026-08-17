@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Info Panel</title>
+
+	<style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #f4f6f9; color: #333; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding-bottom: 40px; }
+
+        /* Навигация */
+        .navbar { background-color: #212529; padding: 1rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .navbar-brand { color: #0d6efd; text-decoration: none; font-weight: bold; font-size: 1.25rem; }
+        .navbar-nav { display: flex; list-style: none; gap: 15px; }
+        .nav-link { color: rgba(255,255,255,.55); text-decoration: none; }
+        .nav-link.active { color: #fff; }
+
+        /* Контейнер и Сетка */
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        /*.row { display: flex; flex-wrap: wrap; margin: 0 -10px; }*/
+        .row { display: flex;  flex-wrap: wrap; margin: 0 -10px;  max-width: 100%; }
+        .col-5 { flex: 0 0 41.66%; padding: 0 10px; }
+        .col-7 { flex: 0 0 58.33%; padding: 0 10px; }
+        /*.col-12 { flex: 0 0 100%; padding: 0 10px; margin-top: 20px; }*/
+        .col-12 { flex: 0 0 100%; padding: 0 10px; margin-top: 20px; max-width: 100%; min-width: 0; }
+
+        /* Карточки */
+        .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,.05); margin-bottom: 20px; overflow: hidden; border: 1px solid rgba(0,0,0,.05); }
+        .card-header { padding: 12px 20px; background-color: #fff; border-bottom: 1px solid rgba(0,0,0,.08); font-weight: 600; }
+        .card-body { padding: 20px; }
+
+        /* Стили для вкладок (Tabs) */
+        .tabs-header { display: flex; background: #f8f9fa; border-bottom: 1px solid rgba(0,0,0,.08); list-style: none; padding: 0 10px; }
+        .tab-link { padding: 12px 20px; color: #6c757d; cursor: pointer; font-weight: 600; text-decoration: none; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-link:hover { color: #0d6efd; background-color: rgba(13, 110, 253, 0.04); }
+        /*.tab-link.active { color: #0d6efd; border-bottom-2px-solid: #0d6efd; background-color: #fff; }*/
+        .tab-link.active { color: #0d6efd; border-bottom: 2px solid #0d6efd; background-color: #fff; }
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; }
+
+        /* Формы и кнопки */
+        .input-group { display: flex; width: 100%; }
+        .form-control { flex: 1; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px 0 0 4px; outline: none; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-primary { background-color: #0d6efd; color: white; border-radius: 0 4px 4px 0; }
+        .btn-sm { padding: 6px 12px; font-size: 0.875rem; border-radius: 4px; }
+        .btn-outline-danger { background: transparent; border: 1px solid #dc3545; color: #dc3545; border-radius: 4px; padding: 8px 16px; font-weight: 500; cursor: pointer; }
+        .btn-outline-secondary { background: transparent; border: 1px solid #6c757d; color: #6c757d; border-radius: 4px; padding: 8px 16px; font-weight: 500; cursor: pointer; }
+        .d-flex { display: flex; justify-content: space-between; }
+
+        /* Таблицы */
+        /* Фиксированная ширина ячеек, чтобы текст не сжимался в кашу */
+        .table { width: 100%; border-collapse: collapse; }
+        .table td, .table th { padding: 12px; border-bottom: 1px solid #dee2e6; text-align: left; }
+
+        .table-striped tbody tr:nth-of-type(odd) { background-color: rgba(0,0,0,.02); }
+        .table-dark th { background-color: #212529; color: white; }
+        code { background-color: #f8f9fa; padding: 2px 6px; border-radius: 4px; color: #d63384; font-family: monospace; }
+
+        /* Статус */
+        .status-unlocked { background-color: #d1e7dd; color: #0f5132; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+
+        /* Контейнер для выпадающего списка */
+        .dropdown {
+            position: relative;
+            /* ДОБАВЛЕНО: небольшой внутренний отступ снизу, чтобы курсор  */
+            /* гарантированно не терял связь с выпадающим меню при спуске */
+            padding-bottom: 10px;
+            margin-bottom: -10px;
+        }
+
+        /* Скрытое по умолчанию меню */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            /* ИСПРАВЛЕНО: Меню выравнивается по правому краю кнопки BSS Tools */
+            right: 0;
+            background-color: #212529;
+            list-style: none;
+            padding: 10px 0;
+            margin-top: 0;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            /* ИСПРАВЛЕНО: Текст больше не переносится и не обрезается */
+            white-space: nowrap;
+            width: max-content;
+        }
+
+        /* Ссылки внутри выпадающего списка */
+        .dropdown-item {
+            display: block;
+            padding: 8px 20px;
+            color: rgba(255,255,255,.55);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        /* Эффект наведения на пункт меню */
+        .dropdown-item:hover {
+            color: #fff;
+            background-color: #0d6efd; /* Синий цвет при наведении */
+        }
+
+        /* Магия CSS: Показываем меню при клике/наведении */
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        /* Стрелочка рядом с текстом "BSS Tools" */
+        .dropdown-toggle::after {
+            content: " ▼";
+            font-size: 0.7rem;
+            vertical-align: middle;
+            color: rgba(255,255,255,.55);
+        }
+        .dropdown:hover .dropdown-toggle::after {
+            color: #fff;
+        }
+
+        /* Ограничивает ширину по экрану и включает горизонтальный скролл */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Плавный скролл на смартфонах */
+            display: block;
+        }
+
+        /* Стилизация таблицы для корректного отображения внутри скролла */
+        .table-centered {
+            width: 100%;
+            min-width: 1200px; /* Принудительно раздвигает колонки, чтобы они не сжимались в кашу */
+            border-collapse: collapse;
+        }
+
+        /* Запрещаем перенос текста в ячейках шапки и тела */
+        .table-centered th,
+        .table-centered td {
+            text-align: center !important;
+            vertical-align: middle;
+            padding: 12px !important;
+            white-space: nowrap; /* Благодаря этому текст колонок ("clockSource", "Satellite") не будет переноситься */
+        }
+
+	</style>
+</head>
+<body>
+    <nav class="navbar">
+        <!--<a class="navbar-brand" href="{% url 'basePage' %}">Info Panel</a>-->
+        <ul class="navbar-nav">
+            <!--<li><a class="nav-link active" href="/nokia/">Nokia</a></li>-->
+            <li><a class="nav-link" href="/nokia/">Nokia</a></li>
+            <li><a class="nav-link" href="/ericsson/">Ericsson</a></li>
+            <!-- Выпадающее меню "Дополнительные инструменты" -->
+            <li class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#">Dev Tools</a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/admin/">Admin-Panel</a></li>
+                    <!--<li><a class="dropdown-item" href="/updateDbInfo/">Update Table Info</a></li>-->
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <p style="color: transparent;">
+        By David, 2025
+    </p>
+    <script>
+        function openTab(event, tabId) {
+            // Прячем весь контент вкладок
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Убираем активный класс у всех кнопок вкладок
+            const links = document.querySelectorAll('.tab-link');
+            links.forEach(link => link.classList.remove('active'));
+
+            // Показываем текущую вкладку и делаем кнопку активной
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
