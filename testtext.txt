@@ -1,527 +1,302 @@
-SELECT VERSION();
-10.5.13-MariaDB
+conn = mysql.connector.connect(
+    host=settings.CONFIG_DATA.get("IPDBNOKIA"),
+    user=settings.CONFIG_DATA.get("USERDBNOKIA"),
+    passwd=settings.CONFIG_DATA.get("PASSWORDDBNOKIA"),
+    database=settings.CONFIG_DATA.get("NAMEDBNOKIA")
+)
 
-SELECT
-    table_name,
-    table_rows
-FROM information_schema.tables
-WHERE table_schema = 'config_Nokia3G_wcell'
-  AND table_name IN ('WCEL_begining', 'WCEL_ending');
-WCEL_begining	96544
-WCEL_ending	96195
+dfWcel30000 = pd.read_sql_query(strDbQuery30000, conn)
+dfBts = pd.read_sql_query(strDbQuery, conn)
 
-SELECT
-    table_name,
-    table_rows
-FROM information_schema.tables
-WHERE table_schema = 'config_Nokia3G_wcell'
-  AND table_name IN ('WCEL_begining', 'WCEL_ending');
-WCEL_begining	96544
-WCEL_ending	96195
+from sqlalchemy import create_engine
+engine = create_engine(
+    f"mysql+mysqlconnector://{dbUser}:{dbPasswd}@{dbIp}/{dbName}"
+)
+df = pd.read_sql_query(dbQuerry, engine)
 
-SELECT
-    table_name,
-    table_rows
-FROM information_schema.tables
-WHERE table_schema = 'config_Nokia2G'
-  AND table_name IN ('BTS', 'TRX');
-TRX	217636
-BTS	109965
+WHERE b.`nwName` LIKE '%IR2663%'
 
-SHOW CREATE TABLE config_Nokia2G.TRX;
-TRX	CREATE TABLE `BTS` (
-   `id` int(11) NOT NULL AUTO_INCREMENT,
-   `Date` datetime DEFAULT NULL,
-   `BSC` int(11) DEFAULT NULL,
-   `BCF` int(11) DEFAULT NULL,
-   `BTS` int(11) DEFAULT NULL,
-   `notAllowedAccessClasses` tinytext DEFAULT NULL,
-   `plmnPermitted` tinytext DEFAULT NULL,
-   `frequencyBandInUse` tinytext DEFAULT NULL,
-   `gprsMsTxPwrMaxCCH1x00` tinytext DEFAULT NULL,
-   `minMsTxPower` tinytext DEFAULT NULL,
-   `msTxPwrMaxCCH1x00` tinytext DEFAULT NULL,
-   `msTxPwrMaxGSM1x00` tinytext DEFAULT NULL,
-   `cellType` tinytext DEFAULT NULL,
-   `insiteGateway` tinytext DEFAULT NULL,
-   `adaptiveLaAlgorithm` tinytext DEFAULT NULL,
-   `adminState` tinytext DEFAULT NULL,
-   `allowIMSIAttachDetach` tinytext DEFAULT NULL,
-   `amhLowerLoadThreshold` tinytext DEFAULT NULL,
-   `amhMaxLoadOfTgtCell` tinytext DEFAULT NULL,
-   `amhTrhoGuardTime` tinytext DEFAULT NULL,
-   `amhUpperLoadThreshold` tinytext DEFAULT NULL,
-   `amrConfFrCodecModeSet` tinytext DEFAULT NULL,
-   `amrConfFrDlThreshold1` tinytext DEFAULT NULL,
-   `amrConfFrDlThreshold2` tinytext DEFAULT NULL,
-   `amrConfFrDlThreshold3` tinytext DEFAULT NULL,
-   `amrConfFrHysteresis1` tinytext DEFAULT NULL,
-   `amrConfFrHysteresis2` tinytext DEFAULT NULL,
-   `amrConfFrHysteresis3` tinytext DEFAULT NULL,
-   `amrConfFrInitCodecMode` tinytext DEFAULT NULL,
-   `amrConfFrStartMode` tinytext DEFAULT NULL,
-   `amrConfFrUlThreshold1` tinytext DEFAULT NULL,
-   `amrConfFrUlThreshold2` tinytext DEFAULT NULL,
-   `amrConfFrUlThreshold3` tinytext DEFAULT NULL,
-   `amrConfHrCodecModeSet` tinytext DEFAULT NULL,
-   `amrConfHrDlThreshold1` tinytext DEFAULT NULL,
-   `amrConfHrDlThreshold2` tinytext DEFAULT NULL,
-   `amrConfHrDlThreshold3` tinytext DEFAULT NULL,
-   `amrConfHrHysteresis1` tinytext DEFAULT NULL,
-   `amrConfHrHysteresis2` tinytext DEFAULT NULL,
-   `amrConfHrHysteresis3` tinytext DEFAULT NULL,
-   `amrConfHrInitCodecMode` tinytext DEFAULT NULL,
-   `amrConfHrStartMode` tinytext DEFAULT NULL,
-   `amrConfHrUlThreshold1` tinytext DEFAULT NULL,
-   `amrConfHrUlThreshold2` tinytext DEFAULT NULL,
-   `amrConfHrUlThreshold3` tinytext DEFAULT NULL,
-   `amrHoFrInHoThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoFrSupReuBadCiThr` tinytext DEFAULT NULL,
-   `amrHoFrSupReuGoodCiThr` tinytext DEFAULT NULL,
-   `amrHoFrThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoFrThrUlRxQual` tinytext DEFAULT NULL,
-   `amrHoHrInHoThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoHrSupReuBadCiThr` tinytext DEFAULT NULL,
-   `amrHoHrSupReuGoodCiThr` tinytext DEFAULT NULL,
-   `amrHoHrThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoHrThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcLThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcLThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcUThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcUThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcLThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcLThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcUThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcUThrUlRxQual` tinytext DEFAULT NULL,
-   `amrSegLoadDepTchRateLower` tinytext DEFAULT NULL,
-   `amrSegLoadDepTchRateUpper` tinytext DEFAULT NULL,
-   `antennaHopping` tinytext DEFAULT NULL,
-   `bsIdentityCodeBCC` tinytext DEFAULT NULL,
-   `bsIdentityCodeNCC` tinytext DEFAULT NULL,
-   `btsIsHopping` tinytext DEFAULT NULL,
-   `btsLoadInSeg` tinytext DEFAULT NULL,
-   `btsLoadThreshold` tinytext DEFAULT NULL,
-   `btsMeasAver` tinytext DEFAULT NULL,
-   `btsSpLoadDepTchRateLower` tinytext DEFAULT NULL,
-   `btsSpLoadDepTchRateUpper` tinytext DEFAULT NULL,
-   `callReestablishmentAllowed` tinytext DEFAULT NULL,
-   `cellBarQualify` tinytext DEFAULT NULL,
-   `cellBarred` tinytext DEFAULT NULL,
-   `cellId` int(11) DEFAULT NULL,
-   `cellLoadForChannelSearch` tinytext DEFAULT NULL,
-   `cellReselectHysteresis` tinytext DEFAULT NULL,
-   `cellReselectOffset` tinytext DEFAULT NULL,
-   `cellReselectParamInd` tinytext DEFAULT NULL,
-   `cnThreshold` tinytext DEFAULT NULL,
-   `cs3Cs4Enabled` tinytext DEFAULT NULL,
-   `dedicatedGPRScapacity` tinytext DEFAULT NULL,
-   `defaultGPRScapacity` tinytext DEFAULT NULL,
-   `dfcaMode` tinytext DEFAULT NULL,
-   `dfcaUnsyncModeMaList` tinytext DEFAULT NULL,
-   `directGPRSAccessBts` tinytext DEFAULT NULL,
-   `diversityUsed` tinytext DEFAULT NULL,
-   `dlNoiseLevel` tinytext DEFAULT NULL,
-   `downgradeGuardTimeHSCSD` tinytext DEFAULT NULL,
-   `drInUse` tinytext DEFAULT NULL,
-   `drMethod` tinytext DEFAULT NULL,
-   `dtmEnabled` tinytext DEFAULT NULL,
-   `dtxMode` tinytext DEFAULT NULL,
-   `earlySendingIndication` tinytext DEFAULT NULL,
-   `egprsEnabled` tinytext DEFAULT NULL,
-   `egprsInitMcsAckMode` tinytext DEFAULT NULL,
-   `egprsInitMcsUnAckMode` tinytext DEFAULT NULL,
-   `egprsLinkAdaptEnabled` tinytext DEFAULT NULL,
-   `egprsMaxBlerAckMode` tinytext DEFAULT NULL,
-   `egprsMaxBlerUnAckMode` tinytext DEFAULT NULL,
-   `egprsMeanBepOffset8psk` tinytext DEFAULT NULL,
-   `egprsMeanBepOffsetGmsk` tinytext DEFAULT NULL,
-   `emergencyCallRestricted` tinytext DEFAULT NULL,
-   `extendedCellGprsEdgeEnabled` tinytext DEFAULT NULL,
-   `extendedCellLocationKeepPeriod` tinytext DEFAULT NULL,
-   `fddQMin` tinytext DEFAULT NULL,
-   `fddQMinOffset` tinytext DEFAULT NULL,
-   `fddQOffset` tinytext DEFAULT NULL,
-   `fddRscpMin` tinytext DEFAULT NULL,
-   `forcedAmrHrCiThreshold` tinytext DEFAULT NULL,
-   `forcedHrCiAverPeriod` tinytext DEFAULT NULL,
-   `forcedHrCiThreshold` tinytext DEFAULT NULL,
-   `forcedHrModeHysteresis` tinytext DEFAULT NULL,
-   `freeTchLimit` tinytext DEFAULT NULL,
-   `gprsEnabled` tinytext DEFAULT NULL,
-   `gprsMsTxpwrMaxCCH` tinytext DEFAULT NULL,
-   `gprsNonBCCHRxlevLower` tinytext DEFAULT NULL,
-   `gprsNonBCCHRxlevUpper` tinytext DEFAULT NULL,
-   `gprsRxlevAccessMin` tinytext DEFAULT NULL,
-   `hcsPriorityClass` tinytext DEFAULT NULL,
-   `hcsThreshold` tinytext DEFAULT NULL,
-   `hoppingMode` int(11) DEFAULT NULL,
-   `hoppingSequenceNumber1` tinytext DEFAULT NULL,
-   `hoppingSequenceNumber2` tinytext DEFAULT NULL,
-   `hoppingSequenceNumber3` tinytext DEFAULT NULL,
-   `ibhoGsmEnabled` tinytext DEFAULT NULL,
-   `ibhoWcdmaEnabled` tinytext DEFAULT NULL,
-   `idleStateBcchAllocListId` tinytext DEFAULT NULL,
-   `idrCellType` tinytext DEFAULT NULL,
-   `idrUsed` tinytext DEFAULT NULL,
-   `inactEndTimeHour` tinytext DEFAULT NULL,
-   `inactEndTimeMinute` tinytext DEFAULT NULL,
-   `inactStartTimeHour` tinytext DEFAULT NULL,
-   `inactStartTimeMinute` tinytext DEFAULT NULL,
-   `inactWeekDays` tinytext DEFAULT NULL,
-   `csAckDl` tinytext DEFAULT NULL,
-   `csAckUl` tinytext DEFAULT NULL,
-   `csExtAckDl` tinytext DEFAULT NULL,
-   `csExtAckUl` tinytext DEFAULT NULL,
-   `csExtUnackDl` tinytext DEFAULT NULL,
-   `csExtUnackUl` tinytext DEFAULT NULL,
-   `csUnackDl` tinytext DEFAULT NULL,
-   `csUnackUl` tinytext DEFAULT NULL,
-   `initMcsExtAckMode` tinytext DEFAULT NULL,
-   `initMcsExtUnackMode` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessAverPeriod` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary0` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary1` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary2` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary3` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary4` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary5` tinytext DEFAULT NULL,
-   `locationAreaIdLAC` tinytext DEFAULT NULL,
-   `locationAreaIdMCC` tinytext DEFAULT NULL,
-   `locationAreaIdMNC` tinytext DEFAULT NULL,
-   `lowerLimitCellLoadHSCSD` tinytext DEFAULT NULL,
-   `maioOffset` tinytext DEFAULT NULL,
-   `maioStep` tinytext DEFAULT NULL,
-   `masterBcf` tinytext DEFAULT NULL,
-   `maxGPRSCapacity` tinytext DEFAULT NULL,
-   `maxNumberOfRepetition` tinytext DEFAULT NULL,
-   `maxNumberRetransmission` tinytext DEFAULT NULL,
-   `maxQueueLength` tinytext DEFAULT NULL,
-   `maxTimeLimitDirectedRetry` tinytext DEFAULT NULL,
-   `measListUsedDuringMeas` tinytext DEFAULT NULL,
-   `measurementBCCHAllocation` tinytext DEFAULT NULL,
-   `minExhaustHSCSD` tinytext DEFAULT NULL,
-   `minHSCSDcapacityCell` tinytext DEFAULT NULL,
-   `minTimeLimitDirectedRetry` tinytext DEFAULT NULL,
-   `msMaxDistInCallSetup` tinytext DEFAULT NULL,
-   `msPriorityUsedInQueueing` tinytext DEFAULT NULL,
-   `msTxPwrMaxCCH` tinytext DEFAULT NULL,
-   `msTxPwrMaxGSM` tinytext DEFAULT NULL,
-   `multiBandCell` tinytext DEFAULT NULL,
-   `multiBandCellReporting` tinytext DEFAULT NULL,
-   `nbrOfSlotsSpreadTrans` tinytext DEFAULT NULL,
-   `nbrTchForPrioritySubs` tinytext DEFAULT NULL,
-   `newEstabCausesSupport` tinytext DEFAULT NULL,
-   `noOfBlocksForAccessGrant` tinytext DEFAULT NULL,
-   `noOfMFramesBetweenPaging` tinytext DEFAULT NULL,
-   `nonBCCHLayerOffset` tinytext DEFAULT NULL,
-   `nwName` tinytext DEFAULT NULL,
-   `pcuCsHopping` tinytext DEFAULT NULL,
-   `pcuCsNonHopping` tinytext DEFAULT NULL,
-   `pcuDlBlerCpHopping` tinytext DEFAULT NULL,
-   `pcuDlBlerCpNonHop` tinytext DEFAULT NULL,
-   `pcuDlLaRiskLevel` tinytext DEFAULT NULL,
-   `pcuUlBlerCpHopping` tinytext DEFAULT NULL,
-   `pcuUlBlerCpNonHop` tinytext DEFAULT NULL,
-   `pcuUlLaRiskLevel` tinytext DEFAULT NULL,
-   `penaltyTime` tinytext DEFAULT NULL,
-   `powerOffset` tinytext DEFAULT NULL,
-   `preferBCCHfreqGPRS2` tinytext DEFAULT NULL,
-   `priorityChUseIncomingHO` tinytext DEFAULT NULL,
-   `psei` tinytext DEFAULT NULL,
-   `qSearchI` tinytext DEFAULT NULL,
-   `qSearchP` tinytext DEFAULT NULL,
-   `queuePriorityNonUrgentHo` tinytext DEFAULT NULL,
-   `queuePriorityUsed` tinytext DEFAULT NULL,
-   `queueingPriorityCall` tinytext DEFAULT NULL,
-   `queueingPriorityHandover` tinytext DEFAULT NULL,
-   `raReselectHysteresis` tinytext DEFAULT NULL,
-   `rac` tinytext DEFAULT NULL,
-   `radioLinkTimeout` tinytext DEFAULT NULL,
-   `radioLinkTimeoutAmr` tinytext DEFAULT NULL,
-   `radioLinkTimeoutAmrHr` tinytext DEFAULT NULL,
-   `radiusExtension` tinytext DEFAULT NULL,
-   `reservationMethod` tinytext DEFAULT NULL,
-   `rxLevAccessMin` tinytext DEFAULT NULL,
-   `scaleOrd` tinytext DEFAULT NULL,
-   `sectorId` int(11) DEFAULT NULL,
-   `segmentId` tinytext DEFAULT NULL,
-   `segmentName` tinytext DEFAULT NULL,
-   `smsCbUsed` tinytext DEFAULT NULL,
-   `stircEnabled` tinytext DEFAULT NULL,
-   `tchRateIntraCellHo` tinytext DEFAULT NULL,
-   `temporaryOffset` tinytext DEFAULT NULL,
-   `throughputFactor_cs1cs4dlcs` tinytext DEFAULT NULL,
-   `throughputFactor_cs1cs4ulcs` tinytext DEFAULT NULL,
-   `throughputFactor_mcs1mcs4ulcs` tinytext DEFAULT NULL,
-   `throughputFactor_mcs1mcs9dlcs` tinytext DEFAULT NULL,
-   `throughputFactor_mcs1mcs9ulcs` tinytext DEFAULT NULL,
-   `timeLimitCall` tinytext DEFAULT NULL,
-   `timeLimitHandover` tinytext DEFAULT NULL,
-   `timerPeriodicUpdateMs` tinytext DEFAULT NULL,
-   `trafficTypesForTrunk` tinytext DEFAULT NULL,
-   `trunkReservationUsed` tinytext DEFAULT NULL,
-   `trxPriorityInTchAlloc` tinytext DEFAULT NULL,
-   `ulNoiseLevel` tinytext DEFAULT NULL,
-   `underlayHoppingMode` tinytext DEFAULT NULL,
-   `underlayMaAllocationId` tinytext DEFAULT NULL,
-   `underlayMaioOffset` tinytext DEFAULT NULL,
-   `underlayMaioStep` tinytext DEFAULT NULL,
-   `upgradeGainHSCSD` tinytext DEFAULT NULL,
-   `upgradeGuardTimeHSCSD` tinytext DEFAULT NULL,
-   `upperLimitCellLoadHSCSD` tinytext DEFAULT NULL,
-   `upperLimitRegularLoadHSCSD` tinytext DEFAULT NULL,
-   `usedMobileAllocation` int(11) DEFAULT NULL,
-   `nsei` tinytext DEFAULT NULL,
-   `name` tinytext DEFAULT NULL,
-   `pcuIdentifier` tinytext DEFAULT NULL,
-   PRIMARY KEY (`id`)
- ) ENGINE=InnoDB AUTO_INCREMENT=109582 DEFAULT CHARSET=latin1
+def funcMysqlPandas3(
+        df,
+        dbQuerry,
+        dbIp,
+        dbUser,
+        dbPasswd,
+        dbName,
+        conn=None,
+        debug=False
+):
+    """
+    Выполняет SQL-запрос и возвращает DataFrame.
+    Если conn передан:
+        используется уже существующее соединение.
+    Если conn=None:
+        создается временное соединение и после запроса закрывается.
+    debug=True:
+        выводит время выполнения.
+    """
+    listExcelLetters = [
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K",
+        "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
+        "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF",
+        "AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO",
+        "AP", "AQ", "AR", "AS", "AT", "AU"
+    ]
+    own_connection = False
+    start_total = time.perf_counter()
+    try:
+        # ---------------------------------------------------------
+        # 1. Если соединение не передали — создаем его
+        # ---------------------------------------------------------
+        if conn is None:
+            start_connect = time.perf_counter()
+            conn = mysql.connector.connect(
+                host=dbIp,
+                user=dbUser,
+                passwd=dbPasswd,
+                database=dbName
+            )
+            connect_time = time.perf_counter() - start_connect
+            own_connection = True
+            if debug:
+                print(f"DB connect time: {connect_time:.3f} sec")
+        # ---------------------------------------------------------
+        # 2. Проверяем соединение
+        # ---------------------------------------------------------
+        if not conn.is_connected():
+            raise ConnectionError("Соединение с MySQL не установлено.")
+        # ---------------------------------------------------------
+        # 3. Выполняем SQL
+        # ---------------------------------------------------------
+        if debug:
+            print(f"Query:\n{dbQuerry}")
+        start_query = time.perf_counter()
+        df = pd.read_sql_query(
+            dbQuerry,
+            conn
+        )
+        query_time = time.perf_counter() - start_query
+        # ---------------------------------------------------------
+        # 4. Переименовываем колонки
+        # ---------------------------------------------------------
+        df.columns = listExcelLetters[:len(df.columns)]
+        # ---------------------------------------------------------
+        # 5. Статистика
+        # ---------------------------------------------------------
+        if debug:
+            print(f"SQL + Pandas time: {query_time:.3f} sec")
+            print(f"Rows: {len(df)}")
+            print(f"Columns: {len(df.columns)}")
+        return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
+    except Exception as e:
+        print(f"Ошибка при работе с MySQL: {e}")
+        return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
+    finally:
+        # Закрываем соединение только если
+        # функция создала его сама.
+        if own_connection and conn is not None:
+            try:
+                if conn.is_connected():
+                    conn.close()
+                    if debug:
+                        total_time = time.perf_counter() - start_total
+                        print(
+                            f"TOTAL funcMysqlPandas3: "
+                            f"{total_time:.3f} sec"
+                        )
+            except Exception:
 
-SHOW CREATE TABLE config_Nokia2G.BTS;
-BTS	CREATE TABLE `BTS` (
-   `id` int(11) NOT NULL AUTO_INCREMENT,
-   `Date` datetime DEFAULT NULL,
-   `BSC` int(11) DEFAULT NULL,
-   `BCF` int(11) DEFAULT NULL,
-   `BTS` int(11) DEFAULT NULL,
-   `notAllowedAccessClasses` tinytext DEFAULT NULL,
-   `plmnPermitted` tinytext DEFAULT NULL,
-   `frequencyBandInUse` tinytext DEFAULT NULL,
-   `gprsMsTxPwrMaxCCH1x00` tinytext DEFAULT NULL,
-   `minMsTxPower` tinytext DEFAULT NULL,
-   `msTxPwrMaxCCH1x00` tinytext DEFAULT NULL,
-   `msTxPwrMaxGSM1x00` tinytext DEFAULT NULL,
-   `cellType` tinytext DEFAULT NULL,
-   `insiteGateway` tinytext DEFAULT NULL,
-   `adaptiveLaAlgorithm` tinytext DEFAULT NULL,
-   `adminState` tinytext DEFAULT NULL,
-   `allowIMSIAttachDetach` tinytext DEFAULT NULL,
-   `amhLowerLoadThreshold` tinytext DEFAULT NULL,
-   `amhMaxLoadOfTgtCell` tinytext DEFAULT NULL,
-   `amhTrhoGuardTime` tinytext DEFAULT NULL,
-   `amhUpperLoadThreshold` tinytext DEFAULT NULL,
-   `amrConfFrCodecModeSet` tinytext DEFAULT NULL,
-   `amrConfFrDlThreshold1` tinytext DEFAULT NULL,
-   `amrConfFrDlThreshold2` tinytext DEFAULT NULL,
-   `amrConfFrDlThreshold3` tinytext DEFAULT NULL,
-   `amrConfFrHysteresis1` tinytext DEFAULT NULL,
-   `amrConfFrHysteresis2` tinytext DEFAULT NULL,
-   `amrConfFrHysteresis3` tinytext DEFAULT NULL,
-   `amrConfFrInitCodecMode` tinytext DEFAULT NULL,
-   `amrConfFrStartMode` tinytext DEFAULT NULL,
-   `amrConfFrUlThreshold1` tinytext DEFAULT NULL,
-   `amrConfFrUlThreshold2` tinytext DEFAULT NULL,
-   `amrConfFrUlThreshold3` tinytext DEFAULT NULL,
-   `amrConfHrCodecModeSet` tinytext DEFAULT NULL,
-   `amrConfHrDlThreshold1` tinytext DEFAULT NULL,
-   `amrConfHrDlThreshold2` tinytext DEFAULT NULL,
-   `amrConfHrDlThreshold3` tinytext DEFAULT NULL,
-   `amrConfHrHysteresis1` tinytext DEFAULT NULL,
-   `amrConfHrHysteresis2` tinytext DEFAULT NULL,
-   `amrConfHrHysteresis3` tinytext DEFAULT NULL,
-   `amrConfHrInitCodecMode` tinytext DEFAULT NULL,
-   `amrConfHrStartMode` tinytext DEFAULT NULL,
-   `amrConfHrUlThreshold1` tinytext DEFAULT NULL,
-   `amrConfHrUlThreshold2` tinytext DEFAULT NULL,
-   `amrConfHrUlThreshold3` tinytext DEFAULT NULL,
-   `amrHoFrInHoThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoFrSupReuBadCiThr` tinytext DEFAULT NULL,
-   `amrHoFrSupReuGoodCiThr` tinytext DEFAULT NULL,
-   `amrHoFrThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoFrThrUlRxQual` tinytext DEFAULT NULL,
-   `amrHoHrInHoThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoHrSupReuBadCiThr` tinytext DEFAULT NULL,
-   `amrHoHrSupReuGoodCiThr` tinytext DEFAULT NULL,
-   `amrHoHrThrDlRxQual` tinytext DEFAULT NULL,
-   `amrHoHrThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcLThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcLThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcUThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocFrPcUThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcLThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcLThrUlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcUThrDlRxQual` tinytext DEFAULT NULL,
-   `amrPocHrPcUThrUlRxQual` tinytext DEFAULT NULL,
-   `amrSegLoadDepTchRateLower` tinytext DEFAULT NULL,
-   `amrSegLoadDepTchRateUpper` tinytext DEFAULT NULL,
-   `antennaHopping` tinytext DEFAULT NULL,
-   `bsIdentityCodeBCC` tinytext DEFAULT NULL,
-   `bsIdentityCodeNCC` tinytext DEFAULT NULL,
-   `btsIsHopping` tinytext DEFAULT NULL,
-   `btsLoadInSeg` tinytext DEFAULT NULL,
-   `btsLoadThreshold` tinytext DEFAULT NULL,
-   `btsMeasAver` tinytext DEFAULT NULL,
-   `btsSpLoadDepTchRateLower` tinytext DEFAULT NULL,
-   `btsSpLoadDepTchRateUpper` tinytext DEFAULT NULL,
-   `callReestablishmentAllowed` tinytext DEFAULT NULL,
-   `cellBarQualify` tinytext DEFAULT NULL,
-   `cellBarred` tinytext DEFAULT NULL,
-   `cellId` int(11) DEFAULT NULL,
-   `cellLoadForChannelSearch` tinytext DEFAULT NULL,
-   `cellReselectHysteresis` tinytext DEFAULT NULL,
-   `cellReselectOffset` tinytext DEFAULT NULL,
-   `cellReselectParamInd` tinytext DEFAULT NULL,
-   `cnThreshold` tinytext DEFAULT NULL,
-   `cs3Cs4Enabled` tinytext DEFAULT NULL,
-   `dedicatedGPRScapacity` tinytext DEFAULT NULL,
-   `defaultGPRScapacity` tinytext DEFAULT NULL,
-   `dfcaMode` tinytext DEFAULT NULL,
-   `dfcaUnsyncModeMaList` tinytext DEFAULT NULL,
-   `directGPRSAccessBts` tinytext DEFAULT NULL,
-   `diversityUsed` tinytext DEFAULT NULL,
-   `dlNoiseLevel` tinytext DEFAULT NULL,
-   `downgradeGuardTimeHSCSD` tinytext DEFAULT NULL,
-   `drInUse` tinytext DEFAULT NULL,
-   `drMethod` tinytext DEFAULT NULL,
-   `dtmEnabled` tinytext DEFAULT NULL,
-   `dtxMode` tinytext DEFAULT NULL,
-   `earlySendingIndication` tinytext DEFAULT NULL,
-   `egprsEnabled` tinytext DEFAULT NULL,
-   `egprsInitMcsAckMode` tinytext DEFAULT NULL,
-   `egprsInitMcsUnAckMode` tinytext DEFAULT NULL,
-   `egprsLinkAdaptEnabled` tinytext DEFAULT NULL,
-   `egprsMaxBlerAckMode` tinytext DEFAULT NULL,
-   `egprsMaxBlerUnAckMode` tinytext DEFAULT NULL,
-   `egprsMeanBepOffset8psk` tinytext DEFAULT NULL,
-   `egprsMeanBepOffsetGmsk` tinytext DEFAULT NULL,
-   `emergencyCallRestricted` tinytext DEFAULT NULL,
-   `extendedCellGprsEdgeEnabled` tinytext DEFAULT NULL,
-   `extendedCellLocationKeepPeriod` tinytext DEFAULT NULL,
-   `fddQMin` tinytext DEFAULT NULL,
-   `fddQMinOffset` tinytext DEFAULT NULL,
-   `fddQOffset` tinytext DEFAULT NULL,
-   `fddRscpMin` tinytext DEFAULT NULL,
-   `forcedAmrHrCiThreshold` tinytext DEFAULT NULL,
-   `forcedHrCiAverPeriod` tinytext DEFAULT NULL,
-   `forcedHrCiThreshold` tinytext DEFAULT NULL,
-   `forcedHrModeHysteresis` tinytext DEFAULT NULL,
-   `freeTchLimit` tinytext DEFAULT NULL,
-   `gprsEnabled` tinytext DEFAULT NULL,
-   `gprsMsTxpwrMaxCCH` tinytext DEFAULT NULL,
-   `gprsNonBCCHRxlevLower` tinytext DEFAULT NULL,
-   `gprsNonBCCHRxlevUpper` tinytext DEFAULT NULL,
-   `gprsRxlevAccessMin` tinytext DEFAULT NULL,
-   `hcsPriorityClass` tinytext DEFAULT NULL,
-   `hcsThreshold` tinytext DEFAULT NULL,
-   `hoppingMode` int(11) DEFAULT NULL,
-   `hoppingSequenceNumber1` tinytext DEFAULT NULL,
-   `hoppingSequenceNumber2` tinytext DEFAULT NULL,
-   `hoppingSequenceNumber3` tinytext DEFAULT NULL,
-   `ibhoGsmEnabled` tinytext DEFAULT NULL,
-   `ibhoWcdmaEnabled` tinytext DEFAULT NULL,
-   `idleStateBcchAllocListId` tinytext DEFAULT NULL,
-   `idrCellType` tinytext DEFAULT NULL,
-   `idrUsed` tinytext DEFAULT NULL,
-   `inactEndTimeHour` tinytext DEFAULT NULL,
-   `inactEndTimeMinute` tinytext DEFAULT NULL,
-   `inactStartTimeHour` tinytext DEFAULT NULL,
-   `inactStartTimeMinute` tinytext DEFAULT NULL,
-   `inactWeekDays` tinytext DEFAULT NULL,
-   `csAckDl` tinytext DEFAULT NULL,
-   `csAckUl` tinytext DEFAULT NULL,
-   `csExtAckDl` tinytext DEFAULT NULL,
-   `csExtAckUl` tinytext DEFAULT NULL,
-   `csExtUnackDl` tinytext DEFAULT NULL,
-   `csExtUnackUl` tinytext DEFAULT NULL,
-   `csUnackDl` tinytext DEFAULT NULL,
-   `csUnackUl` tinytext DEFAULT NULL,
-   `initMcsExtAckMode` tinytext DEFAULT NULL,
-   `initMcsExtUnackMode` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessAverPeriod` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary0` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary1` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary2` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary3` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary4` tinytext DEFAULT NULL,
-   `interferenceAveragingProcessBoundary5` tinytext DEFAULT NULL,
-   `locationAreaIdLAC` tinytext DEFAULT NULL,
-   `locationAreaIdMCC` tinytext DEFAULT NULL,
-   `locationAreaIdMNC` tinytext DEFAULT NULL,
-   `lowerLimitCellLoadHSCSD` tinytext DEFAULT NULL,
-   `maioOffset` tinytext DEFAULT NULL,
-   `maioStep` tinytext DEFAULT NULL,
-   `masterBcf` tinytext DEFAULT NULL,
-   `maxGPRSCapacity` tinytext DEFAULT NULL,
-   `maxNumberOfRepetition` tinytext DEFAULT NULL,
-   `maxNumberRetransmission` tinytext DEFAULT NULL,
-   `maxQueueLength` tinytext DEFAULT NULL,
-   `maxTimeLimitDirectedRetry` tinytext DEFAULT NULL,
-   `measListUsedDuringMeas` tinytext DEFAULT NULL,
-   `measurementBCCHAllocation` tinytext DEFAULT NULL,
-   `minExhaustHSCSD` tinytext DEFAULT NULL,
-   `minHSCSDcapacityCell` tinytext DEFAULT NULL,
-   `minTimeLimitDirectedRetry` tinytext DEFAULT NULL,
-   `msMaxDistInCallSetup` tinytext DEFAULT NULL,
-   `msPriorityUsedInQueueing` tinytext DEFAULT NULL,
-   `msTxPwrMaxCCH` tinytext DEFAULT NULL,
-   `msTxPwrMaxGSM` tinytext DEFAULT NULL,
-   `multiBandCell` tinytext DEFAULT NULL,
-   `multiBandCellReporting` tinytext DEFAULT NULL,
-   `nbrOfSlotsSpreadTrans` tinytext DEFAULT NULL,
-   `nbrTchForPrioritySubs` tinytext DEFAULT NULL,
-   `newEstabCausesSupport` tinytext DEFAULT NULL,
-   `noOfBlocksForAccessGrant` tinytext DEFAULT NULL,
-   `noOfMFramesBetweenPaging` tinytext DEFAULT NULL,
-   `nonBCCHLayerOffset` tinytext DEFAULT NULL,
-   `nwName` tinytext DEFAULT NULL,
-   `pcuCsHopping` tinytext DEFAULT NULL,
-   `pcuCsNonHopping` tinytext DEFAULT NULL,
-   `pcuDlBlerCpHopping` tinytext DEFAULT NULL,
-   `pcuDlBlerCpNonHop` tinytext DEFAULT NULL,
-   `pcuDlLaRiskLevel` tinytext DEFAULT NULL,
-   `pcuUlBlerCpHopping` tinytext DEFAULT NULL,
-   `pcuUlBlerCpNonHop` tinytext DEFAULT NULL,
-   `pcuUlLaRiskLevel` tinytext DEFAULT NULL,
-   `penaltyTime` tinytext DEFAULT NULL,
-   `powerOffset` tinytext DEFAULT NULL,
-   `preferBCCHfreqGPRS2` tinytext DEFAULT NULL,
-   `priorityChUseIncomingHO` tinytext DEFAULT NULL,
-   `psei` tinytext DEFAULT NULL,
-   `qSearchI` tinytext DEFAULT NULL,
-   `qSearchP` tinytext DEFAULT NULL,
-   `queuePriorityNonUrgentHo` tinytext DEFAULT NULL,
-   `queuePriorityUsed` tinytext DEFAULT NULL,
-   `queueingPriorityCall` tinytext DEFAULT NULL,
-   `queueingPriorityHandover` tinytext DEFAULT NULL,
-   `raReselectHysteresis` tinytext DEFAULT NULL,
-   `rac` tinytext DEFAULT NULL,
-   `radioLinkTimeout` tinytext DEFAULT NULL,
-   `radioLinkTimeoutAmr` tinytext DEFAULT NULL,
-   `radioLinkTimeoutAmrHr` tinytext DEFAULT NULL,
-   `radiusExtension` tinytext DEFAULT NULL,
-   `reservationMethod` tinytext DEFAULT NULL,
-   `rxLevAccessMin` tinytext DEFAULT NULL,
-   `scaleOrd` tinytext DEFAULT NULL,
-   `sectorId` int(11) DEFAULT NULL,
-   `segmentId` tinytext DEFAULT NULL,
-   `segmentName` tinytext DEFAULT NULL,
-   `smsCbUsed` tinytext DEFAULT NULL,
-   `stircEnabled` tinytext DEFAULT NULL,
-   `tchRateIntraCellHo` tinytext DEFAULT NULL,
-   `temporaryOffset` tinytext DEFAULT NULL,
-   `throughputFactor_cs1cs4dlcs` tinytext DEFAULT NULL,
-   `throughputFactor_cs1cs4ulcs` tinytext DEFAULT NULL,
-   `throughputFactor_mcs1mcs4ulcs` tinytext DEFAULT NULL,
-   `throughputFactor_mcs1mcs9dlcs` tinytext DEFAULT NULL,
-   `throughputFactor_mcs1mcs9ulcs` tinytext DEFAULT NULL,
-   `timeLimitCall` tinytext DEFAULT NULL,
-   `timeLimitHandover` tinytext DEFAULT NULL,
-   `timerPeriodicUpdateMs` tinytext DEFAULT NULL,
-   `trafficTypesForTrunk` tinytext DEFAULT NULL,
-   `trunkReservationUsed` tinytext DEFAULT NULL,
-   `trxPriorityInTchAlloc` tinytext DEFAULT NULL,
-   `ulNoiseLevel` tinytext DEFAULT NULL,
-   `underlayHoppingMode` tinytext DEFAULT NULL,
-   `underlayMaAllocationId` tinytext DEFAULT NULL,
-   `underlayMaioOffset` tinytext DEFAULT NULL,
-   `underlayMaioStep` tinytext DEFAULT NULL,
-   `upgradeGainHSCSD` tinytext DEFAULT NULL,
-   `upgradeGuardTimeHSCSD` tinytext DEFAULT NULL,
-   `upperLimitCellLoadHSCSD` tinytext DEFAULT NULL,
-   `upperLimitRegularLoadHSCSD` tinytext DEFAULT NULL,
-   `usedMobileAllocation` int(11) DEFAULT NULL,
-   `nsei` tinytext DEFAULT NULL,
-   `name` tinytext DEFAULT NULL,
-   `pcuIdentifier` tinytext DEFAULT NULL,
-   PRIMARY KEY (`id`)
- ) ENGINE=InnoDB AUTO_INCREMENT=109582 DEFAULT CHARSET=latin1
+dbIp = settings.CONFIG_DATA.get("IPDBNOKIA")
+dbUser = settings.CONFIG_DATA.get("USERDBNOKIA")
+dbPasswd = settings.CONFIG_DATA.get("PASSWORDDBNOKIA")
+dbName = settings.CONFIG_DATA.get("NAMEDBNOKIA")
+start_connect = time.perf_counter()
+conn = mysql.connector.connect(
+    host=dbIp,
+    user=dbUser,
+    passwd=dbPasswd,
+    database=dbName
+)
+connect_time = time.perf_counter() - start_connect
+print(f"DB CONNECT: {connect_time:.3f} sec")
+                pass
+strDbQuery30000 = f"""
+    SELECT 
+        CONCAT(
+            'PLMN-PLMN/RNC-', b.`RNC`,
+            '/WBTS-', b.`WBTS`,
+            '/WCEL-', b.`WCEL`
+        ) AS dn,
+        e.`name`,
+        b.`LAC`,
+        e.`RAC`,
+        e.`PriScrCode`,
+        e.`UARFCN`,
+        e.`URAId`,
+        e.`Tcell`,
+        e.`SectorID`,
+        FORMAT(e.`PtxCellMax` / 10.0, 1) AS `PtxCellMax`, 
+        FORMAT(
+            e.`PtxPrimaryCPICH` / 10.0,
+            1
+        ) AS `PtxPrimaryCPICH`,
+        CASE b.`AdminCellState`
+            WHEN 1 THEN 'Unlocked'
+            WHEN 0 THEN 'Locked'
+            ELSE 'Unknown'
+        END AS `AdminCellState`,    
+        CASE 
+            WHEN e.`SectorID` IN ('3', '6', '9') THEN 3
+            WHEN e.`SectorID` IN ('2', '5', '8') THEN 2
+            ELSE 1
+        END AS S,
+        CASE b.`RNC`
+            WHEN '102' THEN 'RNCN-SAH102'
+            WHEN '28'  THEN 'RNCN-IRK028'
+            WHEN '120' THEN 'RNCN-IRK120'
+            WHEN '138' THEN 'RNCN-IRK138'
+            ELSE NULL
+        END AS X,
+        CASE 
+            WHEN LEFT(e.`UARFCN`, 4) = '1056' THEN 1
+            WHEN LEFT(e.`UARFCN`, 4) = '1058' THEN 2
+            ELSE 3
+        END AS `SBTS 3G`
+    FROM config_Nokia3G_wcell.WCEL_begining b
+    JOIN config_Nokia3G_wcell.WCEL_ending e 
+        ON b.`RNC` = e.`RNC`
+        AND b.`WBTS` = e.`WBTS`
+        AND b.`WCEL` = e.`SectorID`
+    WHERE e.`name` REGEXP '({strSite3g})'
+        AND b.`RNC` REGEXP '(102|120|138|28)';
+"""
+
+start_query = time.perf_counter()
+dfWcel30000, _, _, _, _, _ = funcMysqlPandas3(
+    pd.DataFrame(),
+    strDbQuery30000,
+    dbIp,
+    dbUser,
+    dbPasswd,
+    dbName,
+    conn=conn,
+    debug=True
+)
+print(
+    f"3G TOTAL: "
+    f"{time.perf_counter() - start_query:.3f} sec"
+)
+
+strDbQuery = f"""
+    SELECT
+        CONCAT(
+            'PLMN-PLMN/BSC-', b.`BSC`,
+            '/BCF-', b.`BCF`,
+            '/BTS-', b.`BTS`
+        ) AS dn,
+        ...        
+    FROM config_Nokia2G.BTS b
+    LEFT JOIN (
+        SELECT 
+            `BSC`,
+            `BCF`,
+            `BTS`,
+            COUNT(`TRX`) AS AZ,
+            ROUND(AVG(`trxRfPower` / 1000), 0) AS BA,
+            MIN(`initialFrequency`) AS initialFrequency
+        FROM config_Nokia2G.TRX
+        GROUP BY
+            `BSC`,
+            `BCF`,
+            `BTS`
+    ) t_agg 
+        ON b.`BSC` = t_agg.`BSC`
+        AND b.`BCF` = t_agg.`BCF`
+        AND b.`BTS` = t_agg.`BTS`
+    WHERE b.`nwName` REGEXP '({strSite2g})'
+    ORDER BY b.`sectorId`;
+"""
+start_query = time.perf_counter()
+dfBts, _, _, _, _, _ = funcMysqlPandas3(
+    pd.DataFrame(),
+    strDbQuery,
+    dbIp,
+    dbUser,
+    dbPasswd,
+    dbName,
+    conn=conn,
+    debug=True
+)
+print(
+    f"2G TOTAL: "
+    f"{time.perf_counter() - start_query:.3f} sec"
+)
+
+if conn is not None and conn.is_connected():
+    conn.close()
+
+conn = None
+try:
+    # ==========================================
+    # 1. CONNECT
+    # ==========================================
+    start = time.perf_counter()
+    conn = mysql.connector.connect(
+        host=dbIp,
+        user=dbUser,
+        passwd=dbPasswd,
+        database=dbName
+    )
+    print(
+        f"DB CONNECT: "
+        f"{time.perf_counter() - start:.3f} sec"
+    )
+    # ==========================================
+    # 2. 3G QUERY
+    # ==========================================
+    start = time.perf_counter()
+    dfWcel30000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(),
+        strDbQuery30000,
+        dbIp,
+        dbUser,
+        dbPasswd,
+        dbName,
+        conn=conn,
+        debug=True
+    )
+    print(
+        f"3G TOTAL: "
+        f"{time.perf_counter() - start:.3f} sec"
+    )
+    # ==========================================
+    # 3. 2G QUERY
+    # ==========================================
+    start = time.perf_counter()
+    dfBts, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(),
+        strDbQuery,
+        dbIp,
+        dbUser,
+        dbPasswd,
+        dbName,
+        conn=conn,
+        debug=True
+    )
+    print(
+        f"2G TOTAL: "
+        f"{time.perf_counter() - start:.3f} sec"
+    )
+    # ==========================================
+    # 4. Дальше твоя текущая обработка Pandas
+    # ==========================================
+    # dfWcel30000 ...
+    # dfBts ...
+    # dfRanData ...
+    # ...
+finally:
+    # ==========================================
+    # 5. CLOSE DB
+    # ==========================================
+    if conn is not None and conn.is_connected():
+        conn.close()
