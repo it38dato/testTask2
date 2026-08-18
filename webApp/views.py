@@ -382,7 +382,9 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
     listExcelLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO", "AP", "AQ", "AR", "AS", "AT", "AU"]
 
     try:
+        start_total = time.perf_counter()
         # Установление соединения
+        start_connect = time.perf_counter()
         conn = mysql.connector.connect(
             host=dbIp,
             user=dbUser,
@@ -390,16 +392,27 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
             database=dbName,
             #use_pure=True,  # вместо С используем Python
         )
+        connect_time = time.perf_counter() - start_connect
+        print(f"DB connect time: {connect_time:.3f} sec")
+        
         if conn.is_connected():
-            print("Соединение с базой данных установлено успешно.")
+            #print("Соединение с базой данных установлено успешно.")
             # SQL-запрос, который мы хотим выполнить
             #testVar = "382663"
-            query = dbQuerry
+            #query = dbQuerry
             #print(query)
             # Использование pandas.read_sql_query для загрузки данных напрямую в DataFrame
-            df = pd.read_sql_query(query, conn)
+            #df = pd.read_sql_query(query, conn)
+            start_query = time.perf_counter()
+            df = pd.read_sql_query(dbQuerry, conn)
+            query_time = time.perf_counter() - start_query
+            print(f"SQL + Pandas time: {query_time:.3f} sec")
+            print(f"Rows: {len(df)}")
+            print(f"Columns: {len(df.columns)}")
             df.columns = listExcelLetters[0:len(df.columns)]
             # print(f"\nДанные успешно загружены в DataFrame. Получено строк: {len(df)}")
+        total_time = time.perf_counter() - start_total
+        print(f"TOTAL funcMysqlPandas3: {total_time:.3f} sec")           
     except Error as e:
         print(f"Ошибка при работе с MySQL: {e}")
     finally:
@@ -408,6 +421,7 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
             conn.close()
             # print("Соединение с MySQL закрыто.")
     return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
+
 def funcFilterTables24G3G(col, table, g42, g3):
     copyCol=table[col]
     table.insert(0, "Site", copyCol)
