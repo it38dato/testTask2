@@ -1,1 +1,4 @@
-
+SHOW INDEX FROM config_Nokia3G_wcell.WCEL_begining;
+SHOW INDEX FROM config_Nokia3G_wcell.WCEL_ending;
+SHOW INDEX FROM config_Nokia2G.BTS;
+SHOW INDEX FROM config_Nokia2G.TRX;
