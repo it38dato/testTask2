@@ -9,6 +9,7 @@ from django.conf import settings
 import numpy as np
 import re
 from django.db import connection
+import time
 #from scripts import addDfMysql
 # Create your views here.
 class ContentViewSet(viewsets.ModelViewSet):
@@ -378,8 +379,39 @@ def funcMysqlPandas(fromExcel, df):
             #print("Соединение с MySQL закрыто.")
     return fromExcel, df
 def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
-    conn = None
+    '''conn = None
     listExcelLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO", "AP", "AQ", "AR", "AS", "AT", "AU"]
+
+    try:
+        # Установление соединения
+        conn = mysql.connector.connect(
+            host=dbIp,
+            user=dbUser,
+            passwd=dbPasswd,
+            database=dbName,
+            #use_pure=True,  # вместо С используем Python
+        )
+        if conn.is_connected():
+            print("Соединение с базой данных установлено успешно.")
+            # SQL-запрос, который мы хотим выполнить
+            #testVar = "382663"
+            query = dbQuerry
+            #print(query)
+            # Использование pandas.read_sql_query для загрузки данных напрямую в DataFrame
+            df = pd.read_sql_query(query, conn)
+            df.columns = listExcelLetters[0:len(df.columns)]
+            # print(f"\nДанные успешно загружены в DataFrame. Получено строк: {len(df)}")
+    except Error as e:
+        print(f"Ошибка при работе с MySQL: {e}")
+    finally:
+        # Закрытие соединения
+        if conn is not None and conn.is_connected():
+            conn.close()
+            # print("Соединение с MySQL закрыто.")'''
+    conn = None
+    listExcelLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
+                        "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ",
+                        "AK", "AL", "AM", "AN", "AO", "AP", "AQ", "AR", "AS", "AT", "AU"]
 
     try:
         start_total = time.perf_counter()
@@ -390,20 +422,21 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
             user=dbUser,
             passwd=dbPasswd,
             database=dbName,
-            #use_pure=True,  # вместо С используем Python
+            # use_pure=True,  # вместо С используем Python
         )
         connect_time = time.perf_counter() - start_connect
         print(f"DB connect time: {connect_time:.3f} sec")
-        
+
         if conn.is_connected():
-            #print("Соединение с базой данных установлено успешно.")
+            # print("Соединение с базой данных установлено успешно.")
             # SQL-запрос, который мы хотим выполнить
-            #testVar = "382663"
-            #query = dbQuerry
-            #print(query)
+            # testVar = "382663"
+            # query = dbQuerry
+            # print(query)
             # Использование pandas.read_sql_query для загрузки данных напрямую в DataFrame
-            #df = pd.read_sql_query(query, conn)
+            # df = pd.read_sql_query(query, conn)
             start_query = time.perf_counter()
+            print(f"Querry: {dbQuerry}")
             df = pd.read_sql_query(dbQuerry, conn)
             query_time = time.perf_counter() - start_query
             print(f"SQL + Pandas time: {query_time:.3f} sec")
@@ -412,7 +445,7 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
             df.columns = listExcelLetters[0:len(df.columns)]
             # print(f"\nДанные успешно загружены в DataFrame. Получено строк: {len(df)}")
         total_time = time.perf_counter() - start_total
-        print(f"TOTAL funcMysqlPandas3: {total_time:.3f} sec")           
+        print(f"TOTAL funcMysqlPandas3: {total_time:.3f} sec")
     except Error as e:
         print(f"Ошибка при работе с MySQL: {e}")
     finally:
@@ -421,7 +454,6 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
             conn.close()
             # print("Соединение с MySQL закрыто.")
     return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
-
 def funcFilterTables24G3G(col, table, g42, g3):
     copyCol=table[col]
     table.insert(0, "Site", copyCol)
@@ -584,13 +616,12 @@ def funcNokiaList(reg, numb, listForJson):
     listForJson.append(listSite)
     #print(f"+ Add list listForJson numeration 0:\n {listForJson}")
 
-    # Запрашиваем из базы сразу первые 5 нужных колонок, чтобы не гонять лишний трафик
     strDbQuery = f"""
         SELECT * 
         FROM DjangoTemplate.FromDBTEST__site 
         WHERE `0_` = %s;
         """
-    #print("... Executing the request")
+    #print("... Executing the request for Info")
     with connection.cursor() as cursor:
         cursor.execute(strDbQuery, [sublistSite[5]])  # Безопасная передача параметра
         rows = cursor.fetchall()
@@ -616,189 +647,150 @@ def funcNokiaList(reg, numb, listForJson):
     listForJson, sublistsTemp, listsTemp, dfSite, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
         listForJson, [], [], dfSite, len(dfSite.columns), 0, sublistSite[5]
     )
-    print(f"+ Add list listsTemp:\n {listsTemp}")
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
     listForJson.append(listsTemp)
-    print(f"+ Correct list listForJson numeration 1:\n {listForJson}")
+    #print(f"+ Correct list listForJson numeration 1:\n {listForJson}")
 
-    '''# Готовим данные для фильтрации:
-    print(sublistSite[9][2:])
-    print(sublistSite[9])
-    # Собираем данные из БД для таблиц dfWcel и Ran Data. dfWcel30000 необохимдо для объединяния таблицы с dfWcel40000
+    strSite3g = sublistSite[9]  # Берем значение из вашего списка сайта
+    strSite2g = sublistSite[5]  # Берем значение для 2G
+    #print(f"Add str object Site 3G: {strSite3g}")
+    #print(f"Add str object Site 2G: {strSite2g}")
     strDbQuery30000 = f"""
-            SELECT 
-                    CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`) AS dn,
-                    e.`name`,
-                    b.`LAC`,
-                    e.`RAC`, e.`PriScrCode`, e.`UARFCN`, e.`URAId`, e.`Tcell`, e.`SectorID`,
-                    -- Деление на 10.0 для получения дробного числа:
-                    FORMAT(e.`PtxCellMax` / 10.0, 1) AS `PtxCellMax`, FORMAT(e.`PtxPrimaryCPICH` / 10.0, 1) AS `PtxPrimaryCPICH`,
-                    -- Замена значений в столбце AdminCellState:
-                    CASE b.`AdminCellState`
-                        WHEN 1 THEN 'Unlocked'
-                        WHEN 0 THEN 'Locked'
-                        ELSE 'Unknown' -- на случай, если появится другое значение или NULL
-                    END AS `AdminCellState`,    
-                    -- SUBSTRING((CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`)), LOCATE('RNC-', (CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`))) + 4) AS R,
-                    CASE 
-                        WHEN e.`SectorID` IN ('3', '6', '9') THEN 3
-                        WHEN e.`SectorID` IN ('2', '5', '8') THEN 2
-                        WHEN e.`SectorID` IN ('1', '4', '7') THEN 1
-                        ELSE 1
-                    END AS S,
-                    CASE b.`RNC`
-                        WHEN '102' THEN 'RNCN-SAH102'
-                        WHEN '28'  THEN 'RNCN-IRK028'
-                        WHEN '120' THEN 'RNCN-IRK120'
-                        WHEN '138' THEN 'RNCN-IRK138'
-                        ELSE NULL -- Здесь можно указать '', если вместо NULL нужна пустая строка
-                    END AS X,
-                    CASE 
-                        WHEN LEFT(e.`UARFCN`, 4) = '1056' THEN 1
-                        WHEN LEFT(e.`UARFCN`, 4) = '1058' THEN 2
-                        ELSE 3
-                    END AS `SBTS 3G`    
-                FROM config_Nokia3G_wcell.WCEL_begining b
-                JOIN config_Nokia3G_wcell.WCEL_ending e 
-                    ON b.`RNC` = e.`RNC` AND b.`WBTS` = e.`WBTS` AND b.`WCEL` = e.`SectorID` -- связка сектора и логического номера соты
-                -- WHERE b.`WBTS` LIKE '%{sublistSite[9][2:]}%'
-                WHERE e.`name` LIKE '%{sublistSite[9]}%' 
-                  AND (b.`RNC` LIKE '%102%' OR b.`RNC` LIKE '%120%' OR b.`RNC` LIKE '%138%' OR b.`RNC` LIKE '%28%');
+        EXPLAIN
+        SELECT 
+            CONCAT('PLMN-PLMN/RNC-', b.`RNC`, '/WBTS-', b.`WBTS`, '/WCEL-', b.`WCEL`) AS dn,
+            e.`name`, b.`LAC`, e.`RAC`, e.`PriScrCode`, e.`UARFCN`, e.`URAId`, e.`Tcell`, e.`SectorID`,
+            FORMAT(e.`PtxCellMax` / 10.0, 1) AS `PtxCellMax`, 
+            FORMAT(e.`PtxPrimaryCPICH` / 10.0, 1) AS `PtxPrimaryCPICH`,
+            CASE b.`AdminCellState`
+                WHEN 1 THEN 'Unlocked'
+                WHEN 0 THEN 'Locked'
+                ELSE 'Unknown'
+            END AS `AdminCellState`,    
+            CASE 
+                WHEN e.`SectorID` IN ('3', '6', '9') THEN 3
+                WHEN e.`SectorID` IN ('2', '5', '8') THEN 2
+                ELSE 1
+            END AS S,
+            CASE b.`RNC`
+                WHEN '102' THEN 'RNCN-SAH102'
+                WHEN '28'  THEN 'RNCN-IRK028'
+                WHEN '120' THEN 'RNCN-IRK120'
+                WHEN '138' THEN 'RNCN-IRK138'
+                ELSE NULL
+            END AS X,
+            CASE 
+                WHEN LEFT(e.`UARFCN`, 4) = '1056' THEN 1
+                WHEN LEFT(e.`UARFCN`, 4) = '1058' THEN 2
+                ELSE 3
+            END AS `SBTS 3G`    
+        FROM config_Nokia3G_wcell.WCEL_begining b
+        JOIN config_Nokia3G_wcell.WCEL_ending e 
+            ON b.`RNC` = e.`RNC` AND b.`WBTS` = e.`WBTS` AND b.`WCEL` = e.`SectorID`
+        WHERE e.`name` REGEXP '({strSite3g})'  
+            AND (b.`RNC` REGEXP '(102|120|138|28)');
         """
-    dfWcel30000, strDbQuery30000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
+    #print("... Executing the request for Site 3G")
+    dfWcel30000, _, _, _, _, _ = funcMysqlPandas3(
         pd.DataFrame(), strDbQuery30000,
         settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
         settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
     )
-    #print(dfWcel30000)
-    # Корректируем таблицу
-    copyCol = dfWcel30000["B"]
-    dfWcel30000.insert(0, "Site", copyCol)
-    dfWcel30000["Site"] = dfWcel30000["Site"].str[:6]
-    print(f"+ Correct table dfWcel30000:\n {dfWcel30000.to_string()}")
-    # Собираем данные из БД для таблиц dfBts и Ran Data.
+    #print(f"+ Add table dfWcel30000:\n {dfWcel30000}")
+    if not dfWcel30000.empty:
+        copyCol = dfWcel30000["B"]
+        dfWcel30000.insert(0, "Site", copyCol)
+        dfWcel30000["Site"] = dfWcel30000["Site"].str[:6]
+        #print(f"+ Correct table dfWcel30000:\n {dfWcel30000}")
     strDbQuery = f"""
-            SELECT
-                -- Блок изначального запроса BTS
-                CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`) AS dn,
-                b.`BSC`, b.`BCF`, b.`BTS`, b.`nwName`, b.`sectorId`, b.`locationAreaIdLAC`, b.`rac`, b.`bsIdentityCodeBCC`, b.`bsIdentityCodeNCC`,
-                CASE b.`frequencyBandInUse`
-                    WHEN 1 THEN 'GSM 1800'
-                    WHEN 0 THEN 'GSM 900'
-                    ELSE 'Unknow'
-                END AS frequencyBandName,
-                CASE b.`hoppingMode`
-                    WHEN 2 THEN 'SY'
-                    WHEN 1 THEN 'BB'
-                    WHEN 0 THEN 'Non'
-                    ELSE 'Unknow'
-                END AS hoppingMode,
-                b.`hoppingSequenceNumber1`,
-                CASE b.`usedMobileAllocation`
-                    WHEN 0 THEN 'No MAL'
-                    ELSE b.`usedMobileAllocation`
-                END AS usedMobileAllocation,
-                CASE b.`diversityUsed`
-                    WHEN 1 THEN 'Y'
-                    WHEN 0 THEN 'N'
-                    ELSE 'Unknow'
-                END AS diversityUsed,
-                b.`maxGPRSCapacity`,
-                CASE b.`adminState`
-                    WHEN 1 THEN 'Unlocked'
-                    WHEN 0 THEN 'Locked'
-                    ELSE 'Unknow'
-                END AS adminState,
-                SUBSTRING((CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`)), LOCATE('BSC-', (CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`))) + 4) AS AA,
-                SUBSTRING((CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`)), LOCATE('BCF-', (CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`))) + 4) AS AB,
-                CONCAT(b.`BSC`, b.`BCF`) AS AC,
-                CONCAT(b.`BSC`, LPAD(b.`BCF`, 4, '0'), LPAD(b.`BTS`, 4, '0')) AS SORT,
-                SUBSTRING(b.`nwName`, 1, 6) AS AF,
-                CASE b.`BSC`
-                    WHEN 324697 THEN 'BSCN-NSK042'
-                    WHEN 396402 THEN 'BSCN-IRK135'
-                    WHEN 398453 THEN 'BSCN-SAH068'
-                    WHEN 398471 THEN 'BSCN-MGD069'
-                    WHEN 398493 THEN 'BSCN-KAM070'
-                    WHEN 400877 THEN 'BSCN-IRK148'
-                    WHEN 401255 THEN 'BSCN-IRK484'
-                    WHEN 401256 THEN 'BSCN-IRK395'
-                    WHEN 401257 THEN 'BSCN-IRK169'
-                    WHEN 891018 THEN 'BSCN-BIR067'
-                    WHEN 912222 THEN 'BSCN-KHB173'
-                    WHEN 394228 THEN 'BSCN-KHB174'
-                    WHEN 502308 THEN 'BSCN-IRK582'
-                    ELSE 'Unknow'
-                END AS AU,
-                "Unknow" AS AY,
-                -- СКОРРЕКТИРОВАННЫЕ СТОЛБЦЫ
-                COALESCE(t_agg.AZ, 0) AS AZ,
-                COALESCE(t_agg.BA, 0) AS BA,
-                COALESCE(t_agg.initialFrequency, 0) AS TRX, -- Выводим частоту первого TRX, как в вашем условии
-                ROW_NUMBER() OVER (
-                    PARTITION BY SUBSTRING(b.`nwName`, 1, 6)
-                    ORDER BY CONCAT(b.`BSC`, LPAD(b.`BCF`, 4, '0'), LPAD(b.`BTS`, 4, '0'))
-                ) AS BE    
-            FROM config_Nokia2G.BTS b
-            LEFT JOIN (
-                SELECT 
-                    `BSC`, `BCF`, `BTS`,
-                    COUNT(`TRX`) AS AZ,
-                    ROUND(AVG(`trxRfPower` / 1000), 0) AS BA,
-                    -- Находим initialFrequency для TRX с минимальным номером внутри BTS
-                    SUBSTRING_INDEX(GROUP_CONCAT(`initialFrequency` ORDER BY CAST(`TRX` AS UNSIGNED)), ',', 1) AS initialFrequency
-                FROM config_Nokia2G.TRX
-                GROUP BY `BSC`, `BCF`, `BTS`
+        EXPLAIN
+        SELECT
+            CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`) AS dn,
+            b.`BSC`, b.`BCF`, b.`BTS`, b.`nwName`, b.`sectorId`, b.`locationAreaIdLAC`, b.`rac`, b.`bsIdentityCodeBCC`, b.`bsIdentityCodeNCC`,
+            CASE b.`frequencyBandInUse` WHEN 1 THEN 'GSM 1800' ELSE 'GSM 900' END AS frequencyBandName,
+            CASE b.`hoppingMode` WHEN 2 THEN 'SY' WHEN 1 THEN 'BB' ELSE 'Non' END AS hoppingMode,
+            b.`hoppingSequenceNumber1`,
+            CASE b.`usedMobileAllocation` WHEN 0 THEN 'No MAL' ELSE b.`usedMobileAllocation` END AS usedMobileAllocation,
+            CASE b.`diversityUsed` WHEN 1 THEN 'Y' ELSE 'N' END AS diversityUsed,
+            b.`maxGPRSCapacity`,
+            CASE b.`adminState` WHEN 1 THEN 'Unlocked' ELSE 'Locked' END AS adminState,
+            SUBSTRING((CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`)), LOCATE('BSC-', (CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`))) + 4) AS AA,
+            SUBSTRING((CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`)), LOCATE('BCF-', (CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`))) + 4) AS AB,
+            CONCAT(b.`BSC`, b.`BCF`) AS AC,
+            CONCAT(b.`BSC`, LPAD(b.`BCF`, 4, '0'), LPAD(b.`BTS`, 4, '0')) AS SORT,
+            SUBSTRING(b.`nwName`, 1, 6) AS AF,
+            CASE b.`BSC`
+                WHEN 324697 THEN 'BSCN-NSK042' WHEN 396402 THEN 'BSCN-IRK135' WHEN 398453 THEN 'BSCN-SAH068'
+                WHEN 398471 THEN 'BSCN-MGD069' WHEN 398493 THEN 'BSCN-KAM070' WHEN 400877 THEN 'BSCN-IRK148'
+                WHEN 401255 THEN 'BSCN-IRK484' WHEN 401256 THEN 'BSCN-IRK395' WHEN 401257 THEN 'BSCN-IRK169'
+                WHEN 891018 THEN 'BSCN-BIR067' WHEN 912222 THEN 'BSCN-KHB173' WHEN 394228 THEN 'BSCN-KHB174'
+                WHEN 502308 THEN 'BSCN-IRK582' ELSE 'Unknow'
+            END AS AU,
+            "Unknow" AS AY,
+            COALESCE(t_agg.AZ, 0) AS AZ,
+            COALESCE(t_agg.BA, 0) AS BA,
+            COALESCE(t_agg.initialFrequency, 0) AS TRX, 
+            ROW_NUMBER() OVER (
+                PARTITION BY SUBSTRING(b.`nwName`, 1, 6)
+                ORDER BY CONCAT(b.`BSC`, LPAD(b.`BCF`, 4, '0'), LPAD(b.`BTS`, 4, '0'))
+            ) AS BE    
+        FROM config_Nokia2G.BTS b
+        LEFT JOIN (
+            SELECT 
+                `BSC`, `BCF`, `BTS`,
+                COUNT(`TRX`) AS AZ,
+                ROUND(AVG(`trxRfPower` / 1000), 0) AS BA,
+                MIN(`initialFrequency`) AS initialFrequency
+            FROM config_Nokia2G.TRX
+            GROUP BY `BSC`, `BCF`, `BTS`
             ) t_agg 
-                ON b.`BSC` = t_agg.`BSC` 
-                AND b.`BCF` = t_agg.`BCF` 
-                AND b.`BTS` = t_agg.`BTS`
-            WHERE b.`nwName` LIKE '%{sublistSite[5]}%' 
-            ORDER BY b.`sectorId`;
+            ON b.`BSC` = t_agg.`BSC` AND b.`BCF` = t_agg.`BCF` AND b.`BTS` = t_agg.`BTS`
+        WHERE b.`nwName` REGEXP '({strSite2g})'  
+        ORDER BY b.`sectorId`;
         """
-    dfBts, strDbQuery, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
+    #print("... Executing the request for Site 2G")
+    dfBts, _, _, _, _, _ = funcMysqlPandas3(
         pd.DataFrame(), strDbQuery,
         settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
         settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
     )
-    print(f"+ Add table dfBts:\n {dfBts.to_string()}")
-    # Собираем данные Bsc и Rnc для таблицы Ran Data.
-    listBscName = [
-        ip.strip() for ip in (settings.CONFIG_DATA.get("LISTBSCNAME")).replace("', '", ",").replace("'", "").split(',')
-    ]
-    listBscDn = [
-        ip.strip() for ip in (settings.CONFIG_DATA.get("LISTBSCDN")).replace("', '", ",").replace("'", "").split(',')
-    ]
-    listBscOam = [
-        ip.strip() for ip in (settings.CONFIG_DATA.get("LISTBSCOAM")).replace("', '", ",").replace("'", "").split(',')
-    ]
-    dfBscRncName = pd.DataFrame()
-    dfBscRncName["BSC/RNCname"] = listBscName
-    dfBscRncName["dn"] = listBscDn
-    dfBscRncName["OAM"] = listBscOam
-    #print(dfBscRncName)
-    # Объединяем таблицы dfWcel30000 и dfBts
-    dfTemp1 = dfWcel30000.reindex(columns=["Site", "N", "C", "D", "G"])
+    #print(f"+ Add table dfBts:\n {dfBts}")
+    #print(f"... Reading lists for future table dfBscRncName dictionary BSC/RNC")
+    listBscName = [ip.strip() for ip in settings.CONFIG_DATA.get("LISTBSCNAME", "").replace("', '", ",").replace("'", "").split(',')]
+    listBscDn = [ip.strip() for ip in settings.CONFIG_DATA.get("LISTBSCDN", "").replace("'", "").split(',')]
+    listBscOam = [ip.strip() for ip in settings.CONFIG_DATA.get("LISTBSCOAM", "").replace("'", "").split(',')]
+    #print(f"+ Add lists:\n {listBscName}\n {listBscDn}\n {listBscOam}")
+    dfBscRncName = pd.DataFrame({
+        "BSC/RNCname": listBscName,
+        "dn": listBscDn,
+        "OAM": listBscOam
+    })
+    #print(f"+ Add table dfBscRncName:\n {dfBscRncName}")
+    dfTemp1 = dfWcel30000.reindex(columns=["Site", "N", "C", "D", "G"]).head(1)
     dfTemp2 = dfBts.reindex(columns=["V", "W"])
-    # print(dfTemp2)
-    dfTemp1 = dfTemp1.head(1)
-    dfTemp1["Numbers"] = listNumbers[:len(dfTemp1)]
-    dfTemp2["Numbers"] = listNumbers[:len(dfTemp2)]
-    # Собираем данные таблицы Ran Data.
-    dfRanData = pd.merge(dfTemp1, dfTemp2, left_on="Numbers", right_on="Numbers", how="outer")
-    dfRanData = pd.merge(dfRanData, dfBscRncName, left_on="N", right_on="BSC/RNCname", how="outer")
-    dfRanData = dfRanData.dropna()
-    dfRanData = pd.merge(dfRanData, dfBscRncName, left_on="W", right_on="BSC/RNCname", how="outer")
-    dfRanData = dfRanData.dropna()
-    # Корректируем таблицу
-    dfRanData = dfRanData.reindex(columns=["N", "dn_x", "W", "dn_y", "C", "D", "G"])
-    print(f"+ Correct table dfRanData:\n {dfRanData.to_string()}")
-    # Собираем данные в JSON:
+    #print(f"+ Add tables dfTemp1, dfTemp2 for join dfWcel30000 and dfBts:\n {dfBscRncName}")
+    if dfTemp1.empty or dfTemp2.empty:
+        print("- Cancel merger table dbRanData. Not found Data 2G and 3G.")
+        dfRanData = pd.DataFrame(columns=["N", "dn_x", "W", "dn_y", "C", "D", "G"])
+        print(f"+ Add table dfRanData: {dfRanData}")
+    else:
+        # Склеиваем таблицы крест-накрест (1 строка 3G копируется под количество строк 2G)
+        #print("... Joing tables dfTemp2, dfTemp1")
+        dfRanData = dfTemp1.merge(dfTemp2, how="cross")
+        #print(f"+ Add table dfRanData: {dfRanData}")
+        dfRanData = pd.merge(dfRanData, dfBscRncName, left_on="N", right_on="BSC/RNCname", how="inner")
+        dfRanData = pd.merge(dfRanData, dfBscRncName, left_on="W", right_on="BSC/RNCname", how="inner")
+        dfRanData = dfRanData.reindex(columns=["N", "dn_x", "W", "dn_y", "C", "D", "G"])
+        dfRanData = dfRanData.drop_duplicates().reset_index(drop=True)
+        print(f"+ Correct table dfRanData: {dfRanData}")
     listForJson, sublistsTemp, listsTemp, dfRanData, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
-        listForJson,[], [], dfRanData, len(dfRanData.columns),0, sublistSite[5]
+        listForJson, [], [], dfRanData, len(dfRanData.columns), 0, sublistSite[5]
     )
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
     listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 2:\n {listForJson}")
 
-    # Готовим данные для фильтрации:
+    '''# Готовим данные для фильтрации:
     print(sublistSite[4])
     print(sublistSite[10])
     print(sublistSite[13])
