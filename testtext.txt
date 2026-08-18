@@ -1,107 +1,25 @@
-SHOW INDEX FROM config_Nokia3G_wcell.WCEL_begining;
-WCEL_begining	0	PRIMARY	1	id	A	96544				BTREE		
-SHOW INDEX FROM config_Nokia3G_wcell.WCEL_ending;
-WCEL_ending	0	PRIMARY	1	id	A	96195				BTREE		
-SHOW INDEX FROM config_Nokia2G.BTS;
-BTS	0	PRIMARY	1	id	A	109965				BTREE		
-SHOW INDEX FROM config_Nokia2G.TRX;
-TRX	0	PRIMARY	1	id	A	217636				BTREE		
+SELECT VERSION();
 
+SELECT
+    table_name,
+    table_rows
+FROM information_schema.tables
+WHERE table_schema = 'config_Nokia3G_wcell'
+  AND table_name IN ('WCEL_begining', 'WCEL_ending');
 
+SELECT
+    table_name,
+    table_rows
+FROM information_schema.tables
+WHERE table_schema = 'config_Nokia3G_wcell'
+  AND table_name IN ('WCEL_begining', 'WCEL_ending');
 
+SELECT
+    table_name,
+    table_rows
+FROM information_schema.tables
+WHERE table_schema = 'config_Nokia2G'
+  AND table_name IN ('BTS', 'TRX');
 
-DB connect time: 0.419 sec
-Querry: 
-        EXPLAIN
-        SELECT 
-            CONCAT('PLMN-PLMN/RNC-', b.`RNC`, '/WBTS-', b.`WBTS`, '/WCEL-', b.`WCEL`) AS dn,
-            e.`name`, b.`LAC`, e.`RAC`, e.`PriScrCode`, e.`UARFCN`, e.`URAId`, e.`Tcell`, e.`SectorID`,
-            FORMAT(e.`PtxCellMax` / 10.0, 1) AS `PtxCellMax`, 
-            FORMAT(e.`PtxPrimaryCPICH` / 10.0, 1) AS `PtxPrimaryCPICH`,
-            CASE b.`AdminCellState`
-                WHEN 1 THEN 'Unlocked'
-                WHEN 0 THEN 'Locked'
-                ELSE 'Unknown'
-            END AS `AdminCellState`,    
-            CASE 
-                WHEN e.`SectorID` IN ('3', '6', '9') THEN 3
-                WHEN e.`SectorID` IN ('2', '5', '8') THEN 2
-                ELSE 1
-            END AS S,
-            CASE b.`RNC`
-                WHEN '102' THEN 'RNCN-SAH102'
-                WHEN '28'  THEN 'RNCN-IRK028'
-                WHEN '120' THEN 'RNCN-IRK120'
-                WHEN '138' THEN 'RNCN-IRK138'
-                ELSE NULL
-            END AS X,
-            CASE 
-                WHEN LEFT(e.`UARFCN`, 4) = '1056' THEN 1
-                WHEN LEFT(e.`UARFCN`, 4) = '1058' THEN 2
-                ELSE 3
-            END AS `SBTS 3G`    
-        FROM config_Nokia3G_wcell.WCEL_begining b
-        JOIN config_Nokia3G_wcell.WCEL_ending e 
-            ON b.`RNC` = e.`RNC` AND b.`WBTS` = e.`WBTS` AND b.`WCEL` = e.`SectorID`
-        WHERE e.`name` REGEXP '(IR5663)'  
-            AND (b.`RNC` REGEXP '(102|120|138|28)');
-        
-C:\Users\\webAdminTemplate\webApp\views.py:440: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql_query(dbQuerry, conn)
-SQL + Pandas time: 0.182 sec
-Rows: 2
-Columns: 10
-TOTAL funcMysqlPandas3: 0.687 sec
-DB connect time: 0.409 sec
-Querry: 
-        EXPLAIN
-        SELECT
-            CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`) AS dn,
-            b.`BSC`, b.`BCF`, b.`BTS`, b.`nwName`, b.`sectorId`, b.`locationAreaIdLAC`, b.`rac`, b.`bsIdentityCodeBCC`, b.`bsIdentityCodeNCC`,
-            CASE b.`frequencyBandInUse` WHEN 1 THEN 'GSM 1800' ELSE 'GSM 900' END AS frequencyBandName,
-            CASE b.`hoppingMode` WHEN 2 THEN 'SY' WHEN 1 THEN 'BB' ELSE 'Non' END AS hoppingMode,
-            b.`hoppingSequenceNumber1`,
-            CASE b.`usedMobileAllocation` WHEN 0 THEN 'No MAL' ELSE b.`usedMobileAllocation` END AS usedMobileAllocation,
-            CASE b.`diversityUsed` WHEN 1 THEN 'Y' ELSE 'N' END AS diversityUsed,
-            b.`maxGPRSCapacity`,
-            CASE b.`adminState` WHEN 1 THEN 'Unlocked' ELSE 'Locked' END AS adminState,
-            SUBSTRING((CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`)), LOCATE('BSC-', (CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`))) + 4) AS AA,
-            SUBSTRING((CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`)), LOCATE('BCF-', (CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`))) + 4) AS AB,
-            CONCAT(b.`BSC`, b.`BCF`) AS AC,
-            CONCAT(b.`BSC`, LPAD(b.`BCF`, 4, '0'), LPAD(b.`BTS`, 4, '0')) AS SORT,
-            SUBSTRING(b.`nwName`, 1, 6) AS AF,
-            CASE b.`BSC`
-                WHEN 324697 THEN 'BSCN-NSK042' WHEN 396402 THEN 'BSCN-IRK135' WHEN 398453 THEN 'BSCN-SAH068'
-                WHEN 398471 THEN 'BSCN-MGD069' WHEN 398493 THEN 'BSCN-KAM070' WHEN 400877 THEN 'BSCN-IRK148'
-                WHEN 401255 THEN 'BSCN-IRK484' WHEN 401256 THEN 'BSCN-IRK395' WHEN 401257 THEN 'BSCN-IRK169'
-                WHEN 891018 THEN 'BSCN-BIR067' WHEN 912222 THEN 'BSCN-KHB173' WHEN 394228 THEN 'BSCN-KHB174'
-                WHEN 502308 THEN 'BSCN-IRK582' ELSE 'Unknow'
-            END AS AU,
-            "Unknow" AS AY,
-            COALESCE(t_agg.AZ, 0) AS AZ,
-            COALESCE(t_agg.BA, 0) AS BA,
-            COALESCE(t_agg.initialFrequency, 0) AS TRX, 
-            ROW_NUMBER() OVER (
-                PARTITION BY SUBSTRING(b.`nwName`, 1, 6)
-                ORDER BY CONCAT(b.`BSC`, LPAD(b.`BCF`, 4, '0'), LPAD(b.`BTS`, 4, '0'))
-            ) AS BE    
-        FROM config_Nokia2G.BTS b
-        LEFT JOIN (
-            SELECT 
-                `BSC`, `BCF`, `BTS`,
-                COUNT(`TRX`) AS AZ,
-                ROUND(AVG(`trxRfPower` / 1000), 0) AS BA,
-                MIN(`initialFrequency`) AS initialFrequency
-            FROM config_Nokia2G.TRX
-            GROUP BY `BSC`, `BCF`, `BTS`
-            ) t_agg 
-            ON b.`BSC` = t_agg.`BSC` AND b.`BCF` = t_agg.`BCF` AND b.`BTS` = t_agg.`BTS`
-        WHERE b.`nwName` REGEXP '(IR2663)'  
-        ORDER BY b.`sectorId`;
-        
-C:\Users\\webAdminTemplate\webApp\views.py:440: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql_query(dbQuerry, conn)
-SQL + Pandas time: 0.183 sec
-Rows: 3
-Columns: 10
-TOTAL funcMysqlPandas3: 0.684 sec
+SHOW CREATE TABLE config_Nokia2G.TRX;
+SHOW CREATE TABLE config_Nokia2G.BTS;
