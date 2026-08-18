@@ -1,4 +1,8 @@
 SHOW INDEX FROM config_Nokia3G_wcell.WCEL_begining;
+WCEL_begining	0	PRIMARY	1	id	A	96544				BTREE		
 SHOW INDEX FROM config_Nokia3G_wcell.WCEL_ending;
+WCEL_ending	0	PRIMARY	1	id	A	96195				BTREE		
 SHOW INDEX FROM config_Nokia2G.BTS;
+BTS	0	PRIMARY	1	id	A	109965				BTREE		
 SHOW INDEX FROM config_Nokia2G.TRX;
+TRX	0	PRIMARY	1	id	A	217636				BTREE		
