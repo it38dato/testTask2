@@ -1,13 +1,6 @@
-DB CONNECT: 0.455 sec
-C:\Users\\webAdminTemplate\webApp\views.py:442: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql_query(dbQuerry, conn)
-SQL + Pandas time: 2.430 sec
-Rows: 3
-Columns: 15
-3G TOTAL: 2.519 sec
-C:\Users\\webAdminTemplate\webApp\views.py:442: UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested. Please consider using SQLAlchemy.
-  df = pd.read_sql_query(dbQuerry, conn)
-SQL + Pandas time: 3.618 sec
-Rows: 9
-Columns: 28
-2G TOTAL: 3.714 sec
+1	SIMPLE	e	ALL					96195	Using where
+1	SIMPLE	b	ALL					96544	Using where; Using join buffer (flat, BNL join)
+
+1	PRIMARY	b	ALL					107952	Using where; Using temporary; Using filesort
+1	PRIMARY	<derived2>	ref	key0	key0	15	config_Nokia2G.b.BSC,config_Nokia2G.b.BCF,config_Nokia2G.b.BTS	10	Using where
+2	DERIVED	TRX	ALL					218009	Using temporary; Using filesort
