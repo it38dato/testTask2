@@ -378,7 +378,9 @@ def funcMysqlPandas(fromExcel, df):
             conn.close()
             #print("Соединение с MySQL закрыто.")
     return fromExcel, df
-def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
+def funcMysqlPandas3(
+    df, dbQuerry, dbIp, dbUser, dbPasswd, dbName, conn = None, debug = False
+):
     '''conn = None
     listExcelLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO", "AP", "AQ", "AR", "AS", "AT", "AU"]
 
@@ -408,52 +410,62 @@ def funcMysqlPandas3(df, dbQuerry, dbIp, dbUser, dbPasswd, dbName):
         if conn is not None and conn.is_connected():
             conn.close()
             # print("Соединение с MySQL закрыто.")'''
-    conn = None
-    listExcelLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S",
-                        "T", "U", "V", "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ",
-                        "AK", "AL", "AM", "AN", "AO", "AP", "AQ", "AR", "AS", "AT", "AU"]
-
+    listExcelLetters = [
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
+        "W", "X", "Y", "Z", "AA", "AB", "AC", "AD", "AE", "AF", "AG", "AH", "AI", "AJ", "AK", "AL", "AM", "AN", "AO",
+        "AP", "AQ", "AR", "AS", "AT", "AU"
+    ]
+    own_connection = False
+    #start_total = time.perf_counter()
     try:
-        start_total = time.perf_counter()
-        # Установление соединения
-        start_connect = time.perf_counter()
-        conn = mysql.connector.connect(
-            host=dbIp,
-            user=dbUser,
-            passwd=dbPasswd,
-            database=dbName,
-            # use_pure=True,  # вместо С используем Python
-        )
-        connect_time = time.perf_counter() - start_connect
-        print(f"DB connect time: {connect_time:.3f} sec")
-
-        if conn.is_connected():
-            # print("Соединение с базой данных установлено успешно.")
-            # SQL-запрос, который мы хотим выполнить
-            # testVar = "382663"
-            # query = dbQuerry
-            # print(query)
-            # Использование pandas.read_sql_query для загрузки данных напрямую в DataFrame
-            # df = pd.read_sql_query(query, conn)
-            start_query = time.perf_counter()
-            print(f"Querry: {dbQuerry}")
-            df = pd.read_sql_query(dbQuerry, conn)
-            query_time = time.perf_counter() - start_query
-            print(f"SQL + Pandas time: {query_time:.3f} sec")
-            print(f"Rows: {len(df)}")
-            print(f"Columns: {len(df.columns)}")
-            df.columns = listExcelLetters[0:len(df.columns)]
-            # print(f"\nДанные успешно загружены в DataFrame. Получено строк: {len(df)}")
-        total_time = time.perf_counter() - start_total
-        print(f"TOTAL funcMysqlPandas3: {total_time:.3f} sec")
-    except Error as e:
-        print(f"Ошибка при работе с MySQL: {e}")
+        #if conn is None:
+        if conn is None or not conn.is_connected():
+            # Установление соединения
+            #start_connect = time.perf_counter()
+            conn = mysql.connector.connect(
+                host=dbIp,
+                user=dbUser,
+                passwd=dbPasswd,
+                database=dbName,
+            )
+            #connect_time = time.perf_counter() - start_connect
+            own_connection = True
+            print(f"+ Add connection with Mysql")
+            #if debug:
+                #print(f"DB connect time: {connect_time:.3f} sec")
+        #if not conn.is_connected():
+        #    raise ConnectionError("- Connection with Mysql did not installed")
+        #if debug:
+        #    print(f"Query:\n{dbQuerry}")
+        #start_query = time.perf_counter()
+        df = pd.read_sql_query(dbQuerry, conn)
+        #query_time = time.perf_counter() - start_query
+        #print(f"+ Add table df from DB\n {df}")
+        df.columns = listExcelLetters[0:len(df.columns)]
+        #print(f"+ Correct table df\n {df}")
+        #if debug:
+        #    print(f"SQL + Pandas time: {query_time:.3f} sec")
+        #    print(f"Rows: {len(df)}")
+        #    print(f"Columns: {len(df.columns)}")
+        #    print(f"Add Static for connection DB")
+        return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
+    except Exception as e:
+        print(f"- Error in Mysql:\n {e}")
+        return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
     finally:
-        # Закрытие соединения
-        if conn is not None and conn.is_connected():
-            conn.close()
-            # print("Соединение с MySQL закрыто.")
-    return df, dbQuerry, dbIp, dbUser, dbPasswd, dbName
+        if own_connection and conn is not None:
+            try:
+                if conn.is_connected():
+                    conn.close()
+                    #print("+ Close connection with Mysql")
+                    #if debug:
+                        #total_time = time.perf_counter() - start_total
+                        #print(
+                        #    f"TOTAL funcMysqlPandas3: "
+                        #    f"{total_time:.3f} sec"
+                        #)
+            except Exception:
+                pass
 def funcFilterTables24G3G(col, table, g42, g3):
     copyCol=table[col]
     table.insert(0, "Site", copyCol)
@@ -575,7 +587,6 @@ def funcSort2Words(strSorting, strType, strName, strSubIndex):
         print(f"+ Sort list: Type - {strType}, Name - {strName}")
         return strSorting, strType, strName, True
     return strSorting, strType, strName, False
-# 2. СВЕРХБЫСТРАЯ ФУНКЦИЯ ОБРАБОТКИ АДРЕСА
 def funcSort2Words2(address_str):
     if not address_str or not isinstance(address_str, str):
         return address_str
@@ -651,12 +662,23 @@ def funcNokiaList(reg, numb, listForJson):
     listForJson.append(listsTemp)
     #print(f"+ Correct list listForJson numeration 1:\n {listForJson}")
 
+    dbIp = settings.CONFIG_DATA.get("IPDBNOKIA")
+    dbUser = settings.CONFIG_DATA.get("USERDBNOKIA")
+    dbPasswd = settings.CONFIG_DATA.get("PASSWORDDBNOKIA")
+    dbName = settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    #start_connect = time.perf_counter()
+    conn = mysql.connector.connect(
+        host=dbIp,user=dbUser,passwd=dbPasswd,database=dbName
+    )
+    #connect_time = time.perf_counter() - start_connect
+    #print(f"DB CONNECT: {connect_time:.3f} sec")
+    #print(f"+ Add object conn for parametrs DB")
+
     strSite3g = sublistSite[9]  # Берем значение из вашего списка сайта
     strSite2g = sublistSite[5]  # Берем значение для 2G
     #print(f"Add str object Site 3G: {strSite3g}")
     #print(f"Add str object Site 2G: {strSite2g}")
     strDbQuery30000 = f"""
-        EXPLAIN
         SELECT 
             CONCAT('PLMN-PLMN/RNC-', b.`RNC`, '/WBTS-', b.`WBTS`, '/WCEL-', b.`WCEL`) AS dn,
             e.`name`, b.`LAC`, e.`RAC`, e.`PriScrCode`, e.`UARFCN`, e.`URAId`, e.`Tcell`, e.`SectorID`,
@@ -689,13 +711,12 @@ def funcNokiaList(reg, numb, listForJson):
             ON b.`RNC` = e.`RNC` AND b.`WBTS` = e.`WBTS` AND b.`WCEL` = e.`SectorID`
         WHERE e.`name` REGEXP '({strSite3g})'  
             AND (b.`RNC` REGEXP '(102|120|138|28)');
-        """
-    #print("... Executing the request for Site 3G")
+    """
+    #start_query = time.perf_counter()
     dfWcel30000, _, _, _, _, _ = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery30000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        pd.DataFrame(), strDbQuery30000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
+    #print(f"3G TOTAL: {time.perf_counter() - start_query:.3f} sec")
     #print(f"+ Add table dfWcel30000:\n {dfWcel30000}")
     if not dfWcel30000.empty:
         copyCol = dfWcel30000["B"]
@@ -703,8 +724,7 @@ def funcNokiaList(reg, numb, listForJson):
         dfWcel30000["Site"] = dfWcel30000["Site"].str[:6]
         #print(f"+ Correct table dfWcel30000:\n {dfWcel30000}")
     strDbQuery = f"""
-        EXPLAIN
-        SELECT
+           SELECT
             CONCAT('PLMN-PLMN/BSC-', b.`BSC`, '/BCF-', b.`BCF`, '/BTS-', b.`BTS`) AS dn,
             b.`BSC`, b.`BCF`, b.`BTS`, b.`nwName`, b.`sectorId`, b.`locationAreaIdLAC`, b.`rac`, b.`bsIdentityCodeBCC`, b.`bsIdentityCodeNCC`,
             CASE b.`frequencyBandInUse` WHEN 1 THEN 'GSM 1800' ELSE 'GSM 900' END AS frequencyBandName,
@@ -748,13 +768,14 @@ def funcNokiaList(reg, numb, listForJson):
         WHERE b.`nwName` REGEXP '({strSite2g})'  
         ORDER BY b.`sectorId`;
         """
-    #print("... Executing the request for Site 2G")
+    #start_query = time.perf_counter()
     dfBts, _, _, _, _, _ = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        pd.DataFrame(), strDbQuery, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    #print(f"+ Add table dfBts:\n {dfBts}")
+    #print(f"2G TOTAL: {time.perf_counter() - start_query:.3f} sec")
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
     #print(f"... Reading lists for future table dfBscRncName dictionary BSC/RNC")
     listBscName = [ip.strip() for ip in settings.CONFIG_DATA.get("LISTBSCNAME", "").replace("', '", ",").replace("'", "").split(',')]
     listBscDn = [ip.strip() for ip in settings.CONFIG_DATA.get("LISTBSCDN", "").replace("'", "").split(',')]
@@ -790,319 +811,271 @@ def funcNokiaList(reg, numb, listForJson):
     listForJson.append(listsTemp)
     #print(f"+ Correct list listForJson numeration 2:\n {listForJson}")
 
-    '''# Готовим данные для фильтрации:
-    print(sublistSite[4])
-    print(sublistSite[10])
-    print(sublistSite[13])
-    print(sublistSite[16])
-
-    # Собираем данные из БД MRBTS для таблиц Duname.
+    strMrbts0 = sublistSite[4]
+    strMrbts3 = sublistSite[10]
+    strMrbts6 = sublistSite[13]
+    strMrbts4 = sublistSite[16]
+    #print(f"Add str object Mrbts0: {strMrbts0}")
+    #print(f"Add str object Mrbts3: {strMrbts3}")
+    #print(f"Add str object Mrbts6: {strMrbts6}")
+    #print(f"Add str object Mrbts4: {strMrbts4}")
     strDbQuery0000 = f"""
-            SELECT MRBTS, localIpAddr 
-            FROM config_Nokia4G_LNRELW.IPADDRESSV4 
-            WHERE `MRBTS` LIKE '%{sublistSite[4]}%' 
-            AND localIpAddr LIKE '10.%'
-            ORDER BY localIpAddr DESC
-            LIMIT 1;
-            """
+        SELECT MRBTS, localIpAddr 
+        FROM config_Nokia4G_LNRELW.IPADDRESSV4 
+        WHERE `MRBTS` LIKE '%{strMrbts0}%' 
+        AND localIpAddr LIKE '10.%'
+        ORDER BY localIpAddr DESC
+        LIMIT 1;
+    """
     strDbQuery3000 = f"""
-            SELECT MRBTS, localIpAddr 
-            FROM config_Nokia4G_LNRELW.IPADDRESSV4 
-            WHERE `MRBTS` LIKE '%{sublistSite[10]}%' 
-            AND localIpAddr LIKE '10.%'
-            ORDER BY localIpAddr DESC
-            LIMIT 1;
-            """
+        SELECT MRBTS, localIpAddr 
+        FROM config_Nokia4G_LNRELW.IPADDRESSV4 
+        WHERE `MRBTS` LIKE '%{strMrbts3}%' 
+        AND localIpAddr LIKE '10.%'
+        ORDER BY localIpAddr DESC
+        LIMIT 1;
+    """
     strDbQuery6000 = f"""
-            SELECT MRBTS, localIpAddr 
-            FROM config_Nokia4G_LNRELW.IPADDRESSV4 
-            WHERE `MRBTS` LIKE '%{sublistSite[13]}%' 
-            AND localIpAddr LIKE '10.%'
-            ORDER BY localIpAddr DESC
-            LIMIT 1;
-            """
+        SELECT MRBTS, localIpAddr 
+        FROM config_Nokia4G_LNRELW.IPADDRESSV4 
+        WHERE `MRBTS` LIKE '%{strMrbts6}%' 
+        AND localIpAddr LIKE '10.%'
+        ORDER BY localIpAddr DESC
+        LIMIT 1;
+    """
     strDbQuery4000 = f"""
-            SELECT MRBTS, localIpAddr 
-            FROM config_Nokia4G_LNRELW.IPADDRESSV4 
-            WHERE `MRBTS` LIKE '%{sublistSite[16]}%' 
-            AND localIpAddr LIKE '10.%'
-            ORDER BY localIpAddr DESC
-            LIMIT 1;
-            """
-    dfMrbts0000, strDbQuery0000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery0000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        SELECT MRBTS, localIpAddr 
+        FROM config_Nokia4G_LNRELW.IPADDRESSV4 
+        WHERE `MRBTS` LIKE '%{strMrbts4}%' 
+        AND localIpAddr LIKE '10.%'
+        ORDER BY localIpAddr DESC
+        LIMIT 1;
+    """
+    dfMrbts0000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery0000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfMrbts3000, strDbQuery3000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery3000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfMrbts3000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery3000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfMrbts6000, strDbQuery6000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery6000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfMrbts6000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery6000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfMrbts4000, strDbQuery4000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery4000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfMrbts4000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery4000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    #print(dfMrbts0000)
-    #print(dfMrbts3000)
-    #print(dfMrbts6000)
-    #print(dfMrbts4000)
-
-    # Объединяем таблицы Mrbts
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
+    #print(f"+ Add table dfMrbts0000:\n {dfMrbts0000}")
+    #print(f"+ Add table dfMrbts3000:\n {dfMrbts3000}")
+    #print(f"+ Add table dfMrbts6000:\n {dfMrbts6000}")
+    #print(f"+ Add table dfMrbts4000:\n {dfMrbts4000}")
     dfMrbts = pd.concat([dfMrbts0000, dfMrbts3000])
+    #print(f"+ Add table dfMrbts:\n {dfMrbts}")
     dfMrbts = pd.concat([dfMrbts, dfMrbts6000])
     dfMrbts = pd.concat([dfMrbts, dfMrbts4000])
-    #print(dfMrbts)
-
-    # Собираем данные из БД MRBTS для таблиц Duname.
-    print(sublistSite[4])
-    print(sublistSite[10])
-    print(sublistSite[13])
-    print(sublistSite[16])
+    dfMrbts["A"] = dfMrbts["A"].astype("float")  # Возможно нужно будет убрать после поправки таблицы dfEthlk. Поправка: кже добавил dfEthlk. можно проверить
+    #print(f"+ Correct table dfMrbts:\n {dfMrbts}")
     strDbQuery0000 = f"""
-            SELECT 
-                `MRBTS`, 
-                -- `speedAndDuplex`, 
-                -- CASE 
-                --    WHEN speedAndDuplex='0' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='1' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='2' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='' THEN '1000MBIT_FULL'
-                --    ELSE 'Unknow'
-                -- END AS speedAndDuplex, 
-                'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
-                -- `connectorLabel`, 
-                CASE 
-                    WHEN connectorLabel='1' THEN 'EIF1'
-                    WHEN connectorLabel='2' THEN 'EIF2'
-                    WHEN connectorLabel='3' THEN 'EIF3'
-                    WHEN connectorLabel='4' THEN 'EIF4'
-                    WHEN connectorLabel='5' THEN 'EIF5'
-                    ELSE 'Unknow'
-                END AS connectorLabel
-            FROM config_Nokia4G.ETHLK WHERE `MRBTS` LIKE '%{sublistSite[4]}%';
-            """
+        SELECT 
+            `MRBTS`, 
+            'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
+            CASE 
+                WHEN connectorLabel='1' THEN 'EIF1'
+                WHEN connectorLabel='2' THEN 'EIF2'
+                WHEN connectorLabel='3' THEN 'EIF3'
+                WHEN connectorLabel='4' THEN 'EIF4'
+                WHEN connectorLabel='5' THEN 'EIF5'
+                ELSE 'Unknow'
+            END AS connectorLabel
+        FROM config_Nokia4G.ETHLK 
+        WHERE `MRBTS` LIKE '%{strMrbts0}%';
+    """
     strDbQuery3000 = f"""
-            SELECT 
-                `MRBTS`, 
-                -- `speedAndDuplex`, 
-                -- CASE 
-                --    WHEN speedAndDuplex='0' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='1' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='2' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='' THEN '1000MBIT_FULL'
-                --    ELSE 'Unknow'
-                -- END AS speedAndDuplex, 
-                'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
-                -- `connectorLabel`, 
-                CASE 
-                    WHEN connectorLabel='1' THEN 'EIF1'
-                    WHEN connectorLabel='2' THEN 'EIF2'
-                    WHEN connectorLabel='3' THEN 'EIF3'
-                    WHEN connectorLabel='4' THEN 'EIF4'
-                    WHEN connectorLabel='5' THEN 'EIF5'
-                    ELSE 'Unknow'
-                END AS connectorLabel
-            FROM config_Nokia4G.ETHLK WHERE `MRBTS` LIKE '%{sublistSite[10]}%';
-            """
+        SELECT 
+            `MRBTS`, 
+            -- CASE 
+            --    WHEN speedAndDuplex='0' THEN '1000MBIT_FULL'
+            --    WHEN speedAndDuplex='1' THEN '1000MBIT_FULL'
+            --    WHEN speedAndDuplex='2' THEN '1000MBIT_FULL'
+            --    WHEN speedAndDuplex='' THEN '1000MBIT_FULL'
+            --    ELSE 'Unknow'
+            -- END AS speedAndDuplex, 
+            'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
+            -- `connectorLabel`, 
+            CASE 
+                WHEN connectorLabel='1' THEN 'EIF1'
+                WHEN connectorLabel='2' THEN 'EIF2'
+                WHEN connectorLabel='3' THEN 'EIF3'
+                WHEN connectorLabel='4' THEN 'EIF4'
+                WHEN connectorLabel='5' THEN 'EIF5'
+                ELSE 'Unknow'
+            END AS connectorLabel
+        FROM config_Nokia4G.ETHLK 
+        WHERE `MRBTS` LIKE '%{strMrbts3}%';
+    """
     strDbQuery6000 = f"""
-            SELECT 
-                `MRBTS`, 
-                -- `speedAndDuplex`, 
-                -- CASE 
-                --    WHEN speedAndDuplex='0' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='1' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='2' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='' THEN '1000MBIT_FULL'
-                --    ELSE 'Unknow'
-                -- END AS speedAndDuplex, 
-                'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
-                -- `connectorLabel`, 
-                CASE 
-                    WHEN connectorLabel='1' THEN 'EIF1'
-                    WHEN connectorLabel='2' THEN 'EIF2'
-                    WHEN connectorLabel='3' THEN 'EIF3'
-                    WHEN connectorLabel='4' THEN 'EIF4'
-                    WHEN connectorLabel='5' THEN 'EIF5'
-                    ELSE 'Unknow'
-                END AS connectorLabel
-            FROM config_Nokia4G.ETHLK WHERE `MRBTS` LIKE '%{sublistSite[13]}%';
-            """
+        SELECT 
+            `MRBTS`, 
+            'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
+            CASE 
+                WHEN connectorLabel='1' THEN 'EIF1'
+                WHEN connectorLabel='2' THEN 'EIF2'
+                WHEN connectorLabel='3' THEN 'EIF3'
+                WHEN connectorLabel='4' THEN 'EIF4'
+                WHEN connectorLabel='5' THEN 'EIF5'
+                ELSE 'Unknow'
+            END AS connectorLabel
+        FROM config_Nokia4G.ETHLK 
+        WHERE `MRBTS` LIKE '%{strMrbts6}%';
+    """
     strDbQuery4000 = f"""
-            SELECT 
-                `MRBTS`, 
-                -- `speedAndDuplex`, 
-                -- CASE 
-                --    WHEN speedAndDuplex='0' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='1' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='2' THEN '1000MBIT_FULL'
-                --    WHEN speedAndDuplex='' THEN '1000MBIT_FULL'
-                --    ELSE 'Unknow'
-                -- END AS speedAndDuplex, 
-                'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
-                -- `connectorLabel`, 
-                CASE 
-                    WHEN connectorLabel='1' THEN 'EIF1'
-                    WHEN connectorLabel='2' THEN 'EIF2'
-                    WHEN connectorLabel='3' THEN 'EIF3'
-                    WHEN connectorLabel='4' THEN 'EIF4'
-                    WHEN connectorLabel='5' THEN 'EIF5'
-                    ELSE 'Unknow'
-                END AS connectorLabel
-            FROM config_Nokia4G.ETHLK WHERE `MRBTS` LIKE '%{sublistSite[16]}%';
-            """
-    dfEthlk0000, strDbQuery0000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery0000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        SELECT 
+            `MRBTS`, 
+            'Unknow' AS `speedAndDuplex`, -- Есть параметры 10GBIT_FULL, 100MBIT_HALF, 100MBIT_FULL. В Запросе они не учитываются. Необходимо изменить колонку speedAndDuplex.
+            CASE 
+                WHEN connectorLabel='1' THEN 'EIF1'
+                WHEN connectorLabel='2' THEN 'EIF2'
+                WHEN connectorLabel='3' THEN 'EIF3'
+                WHEN connectorLabel='4' THEN 'EIF4'
+                WHEN connectorLabel='5' THEN 'EIF5'
+                ELSE 'Unknow'
+            END AS connectorLabel
+        FROM config_Nokia4G.ETHLK 
+        WHERE `MRBTS` LIKE '%{strMrbts4}%';
+    """
+    dfEthlk0000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery0000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfEthlk3000, strDbQuery3000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery3000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfEthlk3000, _, _, _, _, _= funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery3000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfEthlk6000, strDbQuery6000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery6000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfEthlk6000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery6000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfEthlk4000, strDbQuery4000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery4000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfEthlk4000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery4000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    #print(dfEthlk0000)
-    #print(dfEthlk3000)
-    #print(dfEthlk6000)
-    #print(dfEthlk4000)
-
-    # Объединяем таблицы dfEthlk
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
+    #print(f"+ Add table dfEthlk0000:\n {dfEthlk0000}")
+    #print(f"+ Add table dfEthlk3000:\n {dfEthlk3000}")
+    #print(f"+ Add table dfEthlk6000:\n {dfEthlk6000}")
+    #print(f"+ Add table dfEthlk4000:\n {dfEthlk4000}")
     dfEthlk = pd.concat([dfEthlk0000, dfEthlk3000])
+    # print(f"+ Add table dfEthlk:\n {dfEthlk}")
     dfEthlk = pd.concat([dfEthlk, dfEthlk6000])
     dfEthlk = pd.concat([dfEthlk, dfEthlk4000])
-    #print(dfEthlk)
-
-    # Объединяем таблицы dfEthlk и dfMrbts для получения таблицы dfDuName.
-    dfMrbts["A"] = dfMrbts["A"].astype("float")  # Возможно нужно будет убрать после поправки таблицы dfEthlk. Поправка: кже добавил dfEthlk. можно проверить
-    #print(dfMrbts)
-    #print(dfEthlk)
-    # Необходимо учесть момент что Базовая станция может не существовать. Обычно в этот момент проиходит ошибка из-за пустых таблиц.
-    try:
+    #print(f"+ Correct table dfEthlk:\n {dfEthlk}")
+    try:# Необходимо учесть момент что Базовая станция может не существовать. Обычно в этот момент проиходит ошибка из-за пустых таблиц.
         dfDuName = pd.merge(dfMrbts, dfEthlk, left_on="A", right_on="A", how="outer")
     except ValueError:
-        # Возможно стоит условия в отдельные функции переделать
-        if checkTable(dfMrbts) == True:
-            print("- There is no data for BS " + sublistSite[5] + " in the table")
-            #print(len(dfMrbts.columns))
+        if checkTable(dfMrbts) == True:# Возможно стоит условия в отдельные функции переделать
+            print(f"- There is no data for BS {sublistSite[5]} in the table dfMrbts. Length: {len(dfMrbts.columns)}")
             object = "0"
             lenObj = len(dfMrbts.columns)
             listTable = []
             for indexLenObj in range(0, lenObj):
-                #print(indexLenObj)
+                print(f"+ Add index object: {indexLenObj}")
                 listTable.append(object)
-            #print(listTable)
+            print(f"+ Add list listTable:\n {listTable}")
             dfMrbts.loc[len(dfMrbts)] = listTable
-            #print(dfMrbts)
+            print(f"+ Add table dfMrbts:\n {dfMrbts}")
         if checkTable(dfEthlk) == True:
-            print("- There is no data for BS " + sublistSite[5] + " in the table")
-            #print(len(dfMrbts.columns))
+            print(f"- There is no data for BS {sublistSite[5]} in the table dfMrbts. Length: {len(dfMrbts.columns)}")
             object = "0"
             lenObj = len(dfEthlk.columns)
             listTable = []
             for indexLenObj in range(0, lenObj):
-                #print(indexLenObj)
+                print(f"+ Add index object: {indexLenObj}")
                 listTable.append(object)
-            #print(listTable)
+            print(f"+ Add list listTable:\n {listTable}")
             dfEthlk.loc[len(dfMrbts)] = listTable
-            #print(dfEthlk)
+            print(f"+ Add table dfEthlk:\n {dfEthlk}")
         dfDuName = pd.merge(dfMrbts, dfEthlk, left_on="A", right_on="A", how="outer")
-    #print(dfDuName)
-
-    # Корректируем таблицу dfDuName
+    #print(f"+ Add table dfDuName:\n {dfDuName}")
     dfDuName = dfDuName.reindex(columns=["A", "B_x", "C", "B_y"])
     dfDuName["A"] = dfDuName["A"].astype("int64") # Возможно Стоит убрать типы.
     dfDuName["dn"] = "PLMN-PLMN/MRBTS-" + dfDuName["A"].astype(str) # Возможно проще это перевести в html. dfDuName["A"].astype(str) имеется. просто в html его добавить и остюащиеся элементы
     dfDuName["getRet"] = (
-            "any::com.nokia.srbts:MRBTS [ instance() = '" + dfDuName["A"].astype(str) +
+            "any::com.nokia.srbts:MRBTS [ instance() = '" +
+            dfDuName["A"].astype(str) +
             "'] / descendant::com.nokia.srbts.eqm:RETU"
     ) # Возможно проще это перевести в html. dfDuName["A"].astype(str) имеется. просто в html его добавить и остюащиеся элементы
-    #print(dfDuName)
-    print("ВНИМАНИЕ! Неизвестный объект B_y. Некорректно отображается в БД")
-
-    # Собираем данные в JSON:
+    print(f"+ Correct table dfDuName:\n {dfDuName}")
+    print("- Unknow object B_y. Dont correct display in DB.")
     listForJson, sublistsTemp, listsTemp, dfDuName, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
         listForJson, [], [], dfDuName, len(dfDuName.columns), 0, sublistSite[5]
     )
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
     listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 3:\n {listForJson}")
 
-    # Готовим данные для фильтрации:
-    print(sublistSite)
-    print(sublistSite[0])
-    print(sublistSite[2])
-    print(sublistSite[5])
-
-    # Собираем данные из БД для таблицы df2gHwData:
+    #strReg = sublistSite[0]
+    strNumb = sublistSite[2]
+    strRegNumb = sublistSite[5]
+    #print(f"Add str object strReg: {strReg}")
+    #print(f"Add str object strNumb: {strNumb}")
+    #print(f"Add str object strRegNumb: {strRegNumb}")
     strDbQuery = f"""
-            SELECT
-                r.reg AS Reg,
-                u.BSC, u.BCF, u.HW, u.SUBRACK, u.UNIT, u.unitType, u.serialNumber, u.identificationCode,
-                CONCAT(LEFT(u.UNIT, 4), RIGHT(u.UNIT, 2)) AS J,
-                CONCAT('BSC-', u.BSC, '/BCF-', u.BCF, (CONCAT(LEFT(u.UNIT, 4), RIGHT(u.UNIT, 2)))) AS K
-            FROM config_Nokia4G.UNIT u
-            JOIN (
-                SELECT 'BI' AS reg, '891018' AS bsc_id UNION ALL
-                SELECT 'IR', '28'     UNION ALL
-                SELECT 'IR', '120'    UNION ALL
-                SELECT 'IR', '396402' UNION ALL
-                SELECT 'IR', '400877' UNION ALL
-                SELECT 'IR', '401257' UNION ALL
-                SELECT 'IR', '401256' UNION ALL
-                SELECT 'IR', '401255' UNION ALL
-                SELECT 'IR', '502308' UNION ALL
-                SELECT 'IO', '396402' UNION ALL
-                SELECT 'IO', '400877' UNION ALL
-                SELECT 'IO', '401257' UNION ALL
-                SELECT 'IO', '401256' UNION ALL
-                SELECT 'IO', '401255' UNION ALL
-                SELECT 'IO', '502308' UNION ALL
-                SELECT 'KM', '398493' UNION ALL
-                SELECT 'HB', '912222' UNION ALL
-                SELECT 'HB', '394228' UNION ALL
-                SELECT 'MD', '398471' UNION ALL
-                SELECT 'MD', '324697' UNION ALL
-                SELECT 'SA', '398453' UNION ALL
-                SELECT 'SA', '102'
-            ) r ON u.BSC = r.bsc_id
-            WHERE u.BCF LIKE '%{sublistSite[2]}%' 
-              AND r.reg = '{sublistSite[0]}'; -- Укажите нужный регион здесь (BI, IR, KM, HB, MD, SA)
-        """
-    df2gHwData, strDbQuery, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        SELECT
+            r.reg AS Reg,
+            u.BSC, u.BCF, u.HW, u.SUBRACK, u.UNIT, u.unitType, u.serialNumber, u.identificationCode,
+            CONCAT(LEFT(u.UNIT, 4), RIGHT(u.UNIT, 2)) AS J,
+            CONCAT('BSC-', u.BSC, '/BCF-', u.BCF, (CONCAT(LEFT(u.UNIT, 4), RIGHT(u.UNIT, 2)))) AS K
+        FROM config_Nokia4G.UNIT u
+        JOIN (
+            SELECT 'BI' AS reg, '891018' AS bsc_id UNION ALL
+            SELECT 'IR', '28'     UNION ALL
+            SELECT 'IR', '120'    UNION ALL
+            SELECT 'IR', '396402' UNION ALL
+            SELECT 'IR', '400877' UNION ALL
+            SELECT 'IR', '401257' UNION ALL
+            SELECT 'IR', '401256' UNION ALL
+            SELECT 'IR', '401255' UNION ALL
+            SELECT 'IR', '502308' UNION ALL
+            SELECT 'IO', '396402' UNION ALL
+            SELECT 'IO', '400877' UNION ALL
+            SELECT 'IO', '401257' UNION ALL
+            SELECT 'IO', '401256' UNION ALL
+            SELECT 'IO', '401255' UNION ALL
+            SELECT 'IO', '502308' UNION ALL
+            SELECT 'KM', '398493' UNION ALL
+            SELECT 'HB', '912222' UNION ALL
+            SELECT 'HB', '394228' UNION ALL
+            SELECT 'MD', '398471' UNION ALL
+            SELECT 'MD', '324697' UNION ALL
+            SELECT 'SA', '398453' UNION ALL
+            SELECT 'SA', '102'
+        ) r ON u.BSC = r.bsc_id
+        WHERE u.BCF LIKE '%{strNumb}%' 
+            AND r.reg = '{strRegNumb}'; -- Укажите нужный регион здесь (BI, IR, KM, HB, MD, SA)
+    """
+    df2gHwData, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    #print(df2gHwData)
-
-    # Собираем данные в JSON:
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
+    print(f"+ Add table df2gHwData:\n {df2gHwData}")
     listForJson, sublistsTemp, listsTemp, df2gHwData, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
-        listForJson, [], [], df2gHwData, len(df2gHwData.columns),0, sublistSite[5]
+        listForJson, [], [], df2gHwData, len(df2gHwData.columns), 0, sublistSite[5]
     )
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
     listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 4:\n {listForJson}")
 
-    # Готовим данные для фильтрации. в нашем случае - mrbts:
-    print(sublistSite[4])
-    print(sublistSite[10])
-    print(sublistSite[13])
-    print(sublistSite[16])
-
-    # Собираем данные из БД для таблицы MRBTS Connetction Map:
-    strDbQuery0000 = f"""SELECT 
+    strMrbts0 = sublistSite[4]
+    strMrbts3 = sublistSite[10]
+    strMrbts6 = sublistSite[13]
+    strMrbts4 = sublistSite[16]
+    #print(f"Add str object Mrbts0: {strMrbts0}")
+    #print(f"Add str object Mrbts3: {strMrbts3}")
+    #print(f"Add str object Mrbts6: {strMrbts6}")
+    #print(f"Add str object Mrbts4: {strMrbts4}")
+    strDbQuery0000 = f"""
+        SELECT 
                     ROW_NUMBER() OVER (ORDER BY main_data.AX, main_data.dn) AS T,
                     main_data.*,
                     CAST(CONCAT(main_data.MRBTS, ROW_NUMBER() OVER (ORDER BY AX, dn)) AS CHAR) AS AI,
@@ -1344,10 +1317,12 @@ def funcNokiaList(reg, numb, listForJson):
                             ) AS hwsran1
                         ) AS hwsran2
                     ) AS templateHwsran2 ON CONCAT('PLMN-PLMN/', templateCablink.secondEndpointDN) = templateHwsran2.dn
-                    WHERE templateCablink.MRBTS LIKE '%{sublistSite[4]}%'
+                    WHERE templateCablink.MRBTS LIKE '%{strMrbts0}%'
                 ) AS main_data
-                ORDER BY main_data.AX, main_data.dn;"""
-    strDbQuery3000 = f"""SELECT 
+                ORDER BY main_data.AX, main_data.dn;
+    """
+    strDbQuery3000 = f"""
+        SELECT 
                         ROW_NUMBER() OVER (ORDER BY main_data.AX, main_data.dn) AS T,
                         main_data.*,
                         CAST(CONCAT(main_data.MRBTS, ROW_NUMBER() OVER (ORDER BY AX, dn)) AS CHAR) AS AI,
@@ -1589,10 +1564,12 @@ def funcNokiaList(reg, numb, listForJson):
                                 ) AS hwsran1
                             ) AS hwsran2
                         ) AS templateHwsran2 ON CONCAT('PLMN-PLMN/', templateCablink.secondEndpointDN) = templateHwsran2.dn
-                        WHERE templateCablink.MRBTS LIKE '%{sublistSite[10]}%'
+                        WHERE templateCablink.MRBTS LIKE '%{strMrbts3}%'
                     ) AS main_data
-                    ORDER BY main_data.AX, main_data.dn;"""
-    strDbQuery6000 = f"""SELECT 
+                    ORDER BY main_data.AX, main_data.dn;
+    """
+    strDbQuery6000 = f"""
+        SELECT 
                         ROW_NUMBER() OVER (ORDER BY main_data.AX, main_data.dn) AS T,
                         main_data.*,
                         CAST(CONCAT(main_data.MRBTS, ROW_NUMBER() OVER (ORDER BY AX, dn)) AS CHAR) AS AI,
@@ -1834,10 +1811,12 @@ def funcNokiaList(reg, numb, listForJson):
                                 ) AS hwsran1
                             ) AS hwsran2
                         ) AS templateHwsran2 ON CONCAT('PLMN-PLMN/', templateCablink.secondEndpointDN) = templateHwsran2.dn
-                        WHERE templateCablink.MRBTS LIKE '%{sublistSite[13]}%'
+                        WHERE templateCablink.MRBTS LIKE '%{strMrbts6}%'
                     ) AS main_data
-                    ORDER BY main_data.AX, main_data.dn;"""
-    strDbQuery4000 = f"""SELECT 
+                    ORDER BY main_data.AX, main_data.dn;
+    """
+    strDbQuery4000 = f"""
+        SELECT 
                             ROW_NUMBER() OVER (ORDER BY main_data.AX, main_data.dn) AS T,
                             main_data.*,
                             CAST(CONCAT(main_data.MRBTS, ROW_NUMBER() OVER (ORDER BY AX, dn)) AS CHAR) AS AI,
@@ -2079,221 +2058,211 @@ def funcNokiaList(reg, numb, listForJson):
                                     ) AS hwsran1
                                 ) AS hwsran2
                             ) AS templateHwsran2 ON CONCAT('PLMN-PLMN/', templateCablink.secondEndpointDN) = templateHwsran2.dn
-                            WHERE templateCablink.MRBTS LIKE '%{sublistSite[16]}%'
+                            WHERE templateCablink.MRBTS LIKE '%{strMrbts4}%'
                         ) AS main_data
-                        ORDER BY main_data.AX, main_data.dn;"""
-    dfCablink0000, strDbQuery0000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery0000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+                        ORDER BY main_data.AX, main_data.dn;
+    """
+    dfCablink0000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery0000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfCablink3000, strDbQuery3000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery3000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfCablink3000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery3000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfCablink6000, strDbQuery6000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery6000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfCablink6000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery6000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    dfCablink4000, strDbQuery4000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery4000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    dfCablink4000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery4000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    #print(dfCablink0000)
-    #print(dfCablink3000)
-    #print(dfCablink6000)
-    #print(dfCablink4000)
-
-    # Растягиваем таблицы до определенного количества строк. в нашем случаем мы должны получить 26 строк.
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
+    #print(f"+ Add table dfCablink0000:\n {dfCablink0000}")
+    #print(f"+ Add table dfCablink3000:\n {dfCablink3000}")
+    #print(f"+ Add table dfCablink6000:\n {dfCablink6000}")
+    #print(f"+ Add table dfCablink4000:\n {dfCablink4000}")
     dfCablink0000 = dfCablink0000.reindex(columns=["R", "A", "AM", "AN", "AF", "AE", "D", "C"])
     dfCablink3000 = dfCablink3000.reindex(columns=["R", "A", "AM", "AN", "AF", "AE", "D", "C"])
     dfCablink6000 = dfCablink6000.reindex(columns=["R", "A", "AM", "AN", "AF", "AE", "D", "C"])
     dfCablink4000 = dfCablink4000.reindex(columns=["R", "A", "AM", "AN", "AF", "AE", "D", "C"])
     listNumbers, dfNumbers = funcAddNumbers(listNumbers[0:26], pd.DataFrame())
+    #print(f"+ Add table dfNumbers for count rows 26:\n {dfNumbers}")
     dfCablink0000 = pd.merge(dfNumbers, dfCablink0000, left_on="Numbers", right_on="A", how="outer")
     dfCablink3000 = pd.merge(dfNumbers, dfCablink3000, left_on="Numbers", right_on="A", how="outer")
     dfCablink6000 = pd.merge(dfNumbers, dfCablink6000, left_on="Numbers", right_on="A", how="outer")
     dfCablink4000 = pd.merge(dfNumbers, dfCablink4000, left_on="Numbers", right_on="A", how="outer")
-    #print(dfCablink0000)
-    #print(dfCablink3000)
-    #print(dfCablink6000)
-    #print(dfCablink4000)
-
-    # Объединяем таблиц dfCablinkХ000:
+    #print(f"+ Correct table dfCablink0000:\n {dfCablink0000}")
+    #print(f"+ Correct table dfCablink3000:\n {dfCablink3000}")
+    #print(f"+ Correct table dfCablink6000:\n {dfCablink6000}")
+    #print(f"+ Correct table dfCablink4000:\n {dfCablink4000}")
     dfConnectionMap = pd.merge(dfCablink0000, dfCablink3000, left_on="Numbers", right_on="Numbers", how="outer")
+    #print(f"+ Add table dfConnectionMap:\n {dfConnectionMap}")
     dfConnectionMap = pd.merge(dfConnectionMap, dfCablink6000, left_on="Numbers", right_on="Numbers", how="outer")
-    #print(dfConnectionMap)
-    # 1. Словарь для переименования колонок
-    mapping = {
+    dictRenameCols = {
         "R_x": "B18", "AM_x": "B", "AN_x": "C", "AF_x": "D", "AE_x": "E", "D_x": "F", "C_x": "G", "R_y": "H18",
         "AM_y": "H", "AN_y": "I", "AF_y": "J", "AE_y": "K", "D_y": "L", "C_y": "M", "R": "N18", "AM": "N", "AN": "O",
         "AF": "P", "AE": "Q", "D": "R", "C": "S_20"
     }
-    # 2. Переименовываем, задаем новый порядок и удаляем лишние (A_x, A_y, A)
-    newOrder = [
+    listRenameCols = [
         "B18", "B", "C", "D", "E", "F", "G", "H18", "H", "I", "J", "K", "L", "M", "N18","N", "O", "P", "Q", "R",
         "S_20", "Numbers"
     ]
-    dfConnectionMap = dfConnectionMap.rename(columns=mapping).reindex(columns=newOrder)
-    #print(dfConnectionMap)
+    dfConnectionMap = dfConnectionMap.rename(columns=dictRenameCols).reindex(columns=listRenameCols)
     dfConnectionMap = pd.merge(dfConnectionMap, dfCablink4000, left_on="Numbers", right_on="Numbers", how="outer")
-    #print(dfConnectionMap)
-    # 1. Словарь для переименования только нужных колонок
-    mapping = {
+    dictRenameCols = {
         "R_y": "T18", "AM": "T", "AN": "U", "AF": "V", "AE": "W"
     }
-    # 2. Переименовываем и сразу выстраиваем в финальный порядок
-    newOrder = [
+    listRenameCols = [
         "Numbers", "B18", "B", "C_x", "D_x", "E", "F", "G", "H18", "H", "I", "J", "K", "L", "M", "N18", "N", "O", "P",
         "Q", "R_x", "S_20", "T18", "T", "U", "V", "W", "D_y", "C_y"
     ]
-    dfConnectionMap = dfConnectionMap.rename(columns=mapping).reindex(columns=newOrder)
-    #print(dfConnectionMap)
-
-    # Собираем данные в JSON:
+    dfConnectionMap = dfConnectionMap.rename(columns=dictRenameCols).reindex(columns=listRenameCols)
+    print(f"+ Correct table dfConnectionMap:\n {dfConnectionMap}")
     listForJson, sublistsTemp, listsTemp, dfConnectionMap, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
-        listForJson, [], [], dfConnectionMap, len(dfConnectionMap.columns), 18, sublistSite[5])
-    listForJson.append(listsTemp)
-    #print(listForJson)
-
-    # Готовим данные для фильтрации:
-    print(sublistSite[5])
-
-    # Собираем данные из БД для таблицы dfBcf:
-    strDbQuery = f"""
-               SELECT 
-                   `name`, `btsCuPlaneIpAddress`, `SBTSId`, `lapdLinkName`,
-                   CASE `btsSiteSubtype`
-                       WHEN 255 THEN 'ESMx' -- 'No BTS sub site or Flexi Multiradio BTS (F)'
-                       WHEN 3 THEN 'FSMF' -- 'Flexi Multiradio 10 BTS (R)'
-                       ELSE 'Unknow'
-                   END AS btsSiteSubtype,
-                   CASE `synchEnabled`
-                       WHEN 1 THEN 'T' -- 'Synch enabled (T)'
-                       WHEN 0 THEN 'F' -- 'Synch disabled (F)'
-                       ELSE 'Unknow'
-                   END AS synchEnabled,
-                   SUBSTRING((CASE `clockSource`
-                       WHEN 1 THEN 'LMU (location measurement unit)'
-                       WHEN 0 THEN 'NONE (remove clock source)'
-                       WHEN 3 THEN 'PCM (independent mode)'
-                       WHEN 7 THEN 'TOP'
-                       ELSE 'Unknow'
-                   END), 1, 4) AS clockSource,
-                   'Unknow' AS paSatelliteUse, 
-                   'Unknow' AS OmuSig
-               FROM config_Nokia2G.BCF WHERE `name` LIKE '%{sublistSite[5]}%';
-           """
-    dfBcf, strDbQuery, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        listForJson, [], [], dfConnectionMap, len(dfConnectionMap.columns), 18, sublistSite[5]
     )
-    #print(dfBcf)
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
+    listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 5:\n {listForJson}")
 
-    # Корректируем таблицы:
+    strRegNumb = sublistSite[5]
+    #print(f"Add str object BS name: {strRegNumb}")
+    strDbQuery = f"""
+        SELECT 
+            `name`, `btsCuPlaneIpAddress`, `SBTSId`, `lapdLinkName`,
+            CASE `btsSiteSubtype`
+                WHEN 255 THEN 'ESMx' -- 'No BTS sub site or Flexi Multiradio BTS (F)'
+                WHEN 3 THEN 'FSMF' -- 'Flexi Multiradio 10 BTS (R)'
+                ELSE 'Unknow'
+            END AS btsSiteSubtype,
+            CASE `synchEnabled`
+                WHEN 1 THEN 'T' -- 'Synch enabled (T)'
+                WHEN 0 THEN 'F' -- 'Synch disabled (F)'
+                ELSE 'Unknow'
+            END AS synchEnabled,
+            SUBSTRING((CASE `clockSource`
+                WHEN 1 THEN 'LMU (location measurement unit)'
+                WHEN 0 THEN 'NONE (remove clock source)'
+                WHEN 3 THEN 'PCM (independent mode)'
+                WHEN 7 THEN 'TOP'
+                ELSE 'Unknow'
+            END), 1, 4) AS clockSource,
+            'Unknow' AS paSatelliteUse, 
+            'Unknow' AS OmuSig
+        FROM config_Nokia2G.BCF WHERE `name` LIKE '%{strRegNumb}%';
+    """
+    dfBcf, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
+    )
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
+    #print(f"+ Add table dfBcf:\n {dfBcf}")
     dfTemp1 = dfBcf.reindex(
         columns=["A", "E", "B", "I", "F", "G", "H", "D", "C"]
     )
     dfTemp2 = dfBts.reindex(
         columns=["E", "B", "C", "D", "F", "G", "H", "I", "J", "K", "L", "N", "M", "O", "P", "Q", "A", "V", "AA"]
     )
-
-    # Объединяем таблицы, для получения данных в таблице 2G:
+    #print(f"+ Add tables dfTemp1, dfTemp2:\n {dfTemp1}\n {dfTemp2}")
     df2g = pd.merge(dfTemp2, dfTemp1, left_on="V", right_on="A", how="outer")
+    #print(f"+ Add table df2g:\n {df2g}")
     df2g = df2g.reindex(
         columns=["E_x", "B_x", "E_y", "C_x", "B_y", "H_y", "F_y", "G_y", "I_y", "D_y", "C_y", "D_x", "F_x", "G_x",
                  "H_x", "I_x", "J", "K", "AA", "L", "N", "M", "O", "P", "Q", "A_x"]
     )
-    #print(df2g)
-
-    # Собираем данные в JSON:
+    print(f"+ Correct table df2g:\n {df2g}")
     listForJson, sublistsTemp, listsTemp, df2g, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
-        listForJson, [], [], df2g, len(df2g.columns),0, sublistSite[5]
+        listForJson, [], [], df2g, len(df2g.columns), 0, sublistSite[5]
     )
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
     listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 6:\n {listForJson}")
 
-    # Готовим данные для фильтрации:
-    print(sublistSite[9][2:])
-    print(sublistSite[15][2:])
-
-    # Собираем данные из БД для таблицы dfWcel:
+    strNumb3 = sublistSite[15][2:]
+    #strNumb4 = sublistSite[9][2:]
+    strRegNumb3 = sublistSite[15]
+    strRegNumb4 = sublistSite[9]
+    #print(f"Add str object BS Number 3: {strNumb3}")
+    #print(f"Add str object BS Number 4: {strNumb4}")
+    #print(f"Add str object BS name 3: {strRegNumb3}")
+    #print(f"Add str object BS name 4: {strRegNumb4}")
     strDbQuery40000 = f"""
-                SELECT 
-                        CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`) AS dn,
-                        e.`name`,
-                        b.`LAC`,
-                        e.`RAC`, e.`PriScrCode`, e.`UARFCN`, e.`URAId`, e.`Tcell`, e.`SectorID`,
-                        -- Деление на 10.0 для получения дробного числа:
-                        FORMAT(e.`PtxCellMax` / 10.0, 1) AS `PtxCellMax`, FORMAT(e.`PtxPrimaryCPICH` / 10.0, 1) AS `PtxPrimaryCPICH`,
-                        -- Замена значений в столбце AdminCellState:
-                        CASE b.`AdminCellState`
-                            WHEN 1 THEN 'Unlocked'
-                            WHEN 0 THEN 'Locked'
-                            ELSE 'Unknown' -- на случай, если появится другое значение или NULL
-                        END AS `AdminCellState`,    
-                        -- SUBSTRING((CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`)), LOCATE('RNC-', (CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`))) + 4) AS R,
-                        CASE 
-                            WHEN e.`SectorID` IN ('3', '6', '9') THEN 3
-                            WHEN e.`SectorID` IN ('2', '5', '8') THEN 2
-                            WHEN e.`SectorID` IN ('1', '4', '7') THEN 1
-                            ELSE 1
-                        END AS S,
-                        CASE b.`RNC`
-                            WHEN '102' THEN 'RNCN-SAH102'
-                            WHEN '28'  THEN 'RNCN-IRK028'
-                            WHEN '120' THEN 'RNCN-IRK120'
-                            WHEN '138' THEN 'RNCN-IRK138'
-                            ELSE NULL -- Здесь можно указать '', если вместо NULL нужна пустая строка
-                        END AS X,
-                        CASE 
-                            WHEN LEFT(e.`UARFCN`, 4) = '1056' THEN 1
-                            WHEN LEFT(e.`UARFCN`, 4) = '1058' THEN 2
-                            ELSE 3
-                        END AS `SBTS 3G`    
-                    FROM config_Nokia3G_wcell.WCEL_begining b
-                    JOIN config_Nokia3G_wcell.WCEL_ending e 
-                        ON b.`RNC` = e.`RNC` AND b.`WBTS` = e.`WBTS` AND b.`WCEL` = e.`SectorID` -- связка сектора и логического номера соты
-                    -- WHERE b.`WBTS` LIKE '%{sublistSite[15][2:]}%' 
-                    WHERE e.`name` LIKE '%{sublistSite[15]}%' 
-                      AND (b.`RNC` LIKE '%102%' OR b.`RNC` LIKE '%120%' OR b.`RNC` LIKE '%138%' OR b.`RNC` LIKE '%28%');
-            """
-    dfWcel40000, strDbQuery40000, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery40000,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+        SELECT 
+            CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`) AS dn,
+            e.`name`,b.`LAC`,  e.`RAC`, e.`PriScrCode`, e.`UARFCN`, e.`URAId`, e.`Tcell`, e.`SectorID`,
+            -- Деление на 10.0 для получения дробного числа:
+            FORMAT(e.`PtxCellMax` / 10.0, 1) AS `PtxCellMax`, FORMAT(e.`PtxPrimaryCPICH` / 10.0, 1) AS `PtxPrimaryCPICH`,
+            -- Замена значений в столбце AdminCellState:
+            CASE b.`AdminCellState`
+                WHEN 1 THEN 'Unlocked'
+                WHEN 0 THEN 'Locked'
+                ELSE 'Unknown' -- на случай, если появится другое значение или NULL
+            END AS `AdminCellState`,    
+            -- SUBSTRING((CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`)), LOCATE('RNC-', (CONCAT('PLMN-PLMN/RNC-',b.`RNC`,'/WBTS-',b.`WBTS`,'/WCEL-',b.`WCEL`))) + 4) AS R,
+            CASE 
+                WHEN e.`SectorID` IN ('3', '6', '9') THEN 3
+                WHEN e.`SectorID` IN ('2', '5', '8') THEN 2
+                WHEN e.`SectorID` IN ('1', '4', '7') THEN 1
+                ELSE 1
+            END AS S,
+            CASE b.`RNC`
+                WHEN '102' THEN 'RNCN-SAH102'
+                WHEN '28'  THEN 'RNCN-IRK028'
+                WHEN '120' THEN 'RNCN-IRK120'
+                WHEN '138' THEN 'RNCN-IRK138'
+                ELSE NULL -- Здесь можно указать '', если вместо NULL нужна пустая строка
+            END AS X,
+            CASE 
+                WHEN LEFT(e.`UARFCN`, 4) = '1056' THEN 1
+                WHEN LEFT(e.`UARFCN`, 4) = '1058' THEN 2
+                ELSE 3
+            END AS `SBTS 3G`    
+        FROM config_Nokia3G_wcell.WCEL_begining b
+        JOIN config_Nokia3G_wcell.WCEL_ending e 
+            ON b.`RNC` = e.`RNC` AND b.`WBTS` = e.`WBTS` AND b.`WCEL` = e.`SectorID` -- связка сектора и логического номера соты
+        -- WHERE b.`WBTS` LIKE '%{strNumb3}%' 
+        WHERE e.`name` LIKE '%{strRegNumb3}%' 
+            AND (b.`RNC` LIKE '%102%' OR b.`RNC` LIKE '%120%' OR b.`RNC` LIKE '%138%' OR b.`RNC` LIKE '%28%');
+    """
+    dfWcel40000, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery40000, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-
-    # Корректируем таблицы:
-    copyCol = dfWcel40000["B"]
-    dfWcel40000.insert(0, "Site", copyCol)
+    #if conn is not None and conn.is_connected():
+    #    conn.close()
+    #print(f"+ Close connection")
+    #print(f"+ Add table dfWcel40000:\n {dfWcel40000}")
+    #copyCol = dfWcel40000["B"]
+    #dfWcel40000.insert(0, "Site", copyCol)
+    dfWcel40000.insert(0, "Site", dfWcel40000["B"])
     dfWcel40000["Site"] = dfWcel40000["Site"].str[:6]
-
-    # Объединяем таблицы, для получения данных в таблице 3G:
+    #print(f"+ Correct table dfWcel40000:\n {dfWcel40000}")
     dfWcel = pd.concat([dfWcel30000, dfWcel40000])
+    #print(f"+ Add table dfWcel:\n {dfWcel}")
     dfWcel = dfWcel.reindex(columns=["Site", "B", "F", "E", "I", "C", "D", "G", "H", "J", "K", "L", "A"])
-    #print(dfWcel)
-    print("ВНИМАНИЕ! Необходимо поправить колонку tcell. Отличаются от excel. Возможно в sql запрос при задании колнки нужно поправить, в виде условий.")
-
-    # Собираем данные в JSON:
-    listForJson, sublistsTemp, listsTemp, dfWcel, lenObjs, lenList, sublistSite[9] = funcAddListFromTable(
-        listForJson, [], [], dfWcel, len(dfWcel.columns), 0, sublistSite[9]
+    print(f"+ Correct table dfWcel:\n {dfWcel}")
+    print("- It is necessary to correct the tcell column. They differ from Excel. Perhaps the SQL query needs to be corrected when setting the column, in the form of conditions.")
+    listForJson, sublistsTemp, listsTemp, dfWcel, lenObjs, lenList, strRegNumb4 = funcAddListFromTable(
+        listForJson, [], [], dfWcel, len(dfWcel.columns), 0, strRegNumb4
     )
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
     listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 7:\n {listForJson}")
 
-    # Готовим данные для фильтрации:
-    print(sublistSite[4])
-    print(sublistSite[17])
-    print(sublistSite[18])
-    print(sublistSite[19])
-    print(sublistSite[20])
-    print(sublistSite[21])
-    print(sublistSite[22])
-
-    # Собираем данные из БД для таблицы dfLncel:
+    strMrbts = sublistSite[4]
+    strLnhoif1 = sublistSite[17]
+    strLnhoif2 = sublistSite[18]
+    strLnhoif3 = sublistSite[19]
+    strLnhoif4 = sublistSite[20]
+    strLnhoif5 = sublistSite[21]
+    strLnhoif6 = sublistSite[22]
+    #print(f"Add str object Mrbts: {strMrbts}")
+    #print(f"Add str object Lnhoif1: {strLnhoif1}")
+    #print(f"Add str object Lnhoif2: {strLnhoif2}")
+    #print(f"Add str object Lnhoif3: {strLnhoif3}")
+    #print(f"Add str object Lnhoif4: {strLnhoif4}")
+    #print(f"Add str object Lnhoif5: {strLnhoif5}")
+    #print(f"Add str object Lnhoif6: {strLnhoif6}")
     strDbQuery = f"""
         SELECT 
             CONCAT('PLMN-PLMN/MRBTS-', b.`MRBTS`, '/LNBTS-', b.`LNBTS`, '/LNCEL-', b.`LNCEL`) AS dn,
@@ -2362,37 +2331,35 @@ def funcNokiaList(reg, numb, listForJson):
             FROM config_Nokia4G.LNCEL_TDD
         ) rf 
             ON b.MRBTS = rf.MRBTS AND b.LNBTS = rf.LNBTS AND b.LNCEL = rf.LNCEL
-        WHERE b.MRBTS LIKE '%{sublistSite[4]}%'
+        WHERE b.MRBTS LIKE '%{strMrbts}%'
         order by b.LNCEL;
-        """
-    dfLncel, strDbQuery, strDbIp, strDbUser, strDbPasswd, strDbName = funcMysqlPandas3(
-        pd.DataFrame(), strDbQuery,
-        settings.CONFIG_DATA.get("IPDBNOKIA"), settings.CONFIG_DATA.get("USERDBNOKIA"),
-        settings.CONFIG_DATA.get("PASSWORDDBNOKIA"), settings.CONFIG_DATA.get("NAMEDBNOKIA")
+    """
+    dfLncel, _, _, _, _, _ = funcMysqlPandas3(
+        pd.DataFrame(), strDbQuery, dbIp, dbUser, dbPasswd, dbName, conn=conn, debug=True
     )
-    #print(dfLncel)
-
-    # Корректируем таблицы. Данные столбцы необходимо только для BSS. В нашей таблице они не отобразятся. может стоит убрать ниже столбцы:
-    dfLncel["LNHOIF_0"] = sublistSite[17]
-    dfLncel["LNHOIF_1"] = sublistSite[18]
-    dfLncel["LNHOIF_2"] = sublistSite[19]
-    dfLncel["LNHOIF_3"] = sublistSite[20]
-    dfLncel["LNHOIF_4"] = sublistSite[21]
-    dfLncel["LNHOIF_5"] = sublistSite[22]
-    # print(dfLncel)
-
-    # Получаем данные в таблице 4G:
+    if conn is not None and conn.is_connected():
+        conn.close()
+    #print(f"+ Close connection")
+    #print(f"+ Add table dfLncel:\n {dfLncel}")
+    # Данные столбцы необходимы только для BSS. В нашей таблице они не отобразятся. может стоит убрать ниже столбцы:
+    dfLncel["LNHOIF_0"] = strLnhoif1
+    dfLncel["LNHOIF_1"] = strLnhoif2
+    dfLncel["LNHOIF_2"] = strLnhoif3
+    dfLncel["LNHOIF_3"] = strLnhoif4
+    dfLncel["LNHOIF_4"] = strLnhoif5
+    dfLncel["LNHOIF_5"] = strLnhoif6
+    #print(f"+ Correct table dfLncel:\n {dfLncel}")
     df4g = dfLncel.reindex(
         columns=["B", "O", "P", "C", "F", "J", "K", "Q", "H", "LNHOIF_0", "LNHOIF_1", "LNHOIF_2", "LNHOIF_3",
         "LNHOIF_4", "LNHOIF_5", "D", "E", "L", "N", "A"]
     )
-    #print(df4g)
-
-    # Собираем данные в JSON:
+    print(f"+ Add table df4g:\n {df4g}")
     listForJson, sublistsTemp, listsTemp, df4g, lenObjs, lenList, sublistSite[5] = funcAddListFromTable(
         listForJson, [], [], df4g, len(df4g.columns), 0, sublistSite[5]
     )
-    listForJson.append(listsTemp)'''
+    #print(f"+ Add list listsTemp:\n {listsTemp}")
+    listForJson.append(listsTemp)
+    #print(f"+ Correct list listForJson numeration 8:\n {listForJson}")
     return reg, numb, listForJson
 def funcEricssonList(reg, numb, band, listForJson):
     listSite = []
@@ -3948,10 +3915,9 @@ def funcEricssonRet(request):
 def funcNokia(request):
     jsonContents = {}
     listMain = []
-    #Получаем данные из Админки
     #listContents = Content.objects.all()
-    #listContents = Content.objects.only('id', 'title', 'idcard', 'idmenu', 'author', 'date')
     listContents = Content.objects.only('id', 'title', 'idcard', 'idmenu', 'author', 'date', 'content')
+    #print(f"+ Add list listContents for Admin-Panel:\n {listContents}")
     for raw in listContents:
         if raw.idmenu not in jsonContents:
             jsonContents[raw.idmenu] = []
@@ -3964,59 +3930,48 @@ def funcNokia(request):
             "author": raw.author,
             "date": raw.date
         })
-
-    # Получаем данные из Общих страниц
+    #print(f"+ Add dict jsonContents:\n {jsonContents}")
     if request.method == "POST":
-        # Готовим данные которые ввел пользователь на странице:
-        #inputReg = request.POST.get("Reg")
-        #inputNumber = request.POST.get("NS")
-        #inputBB = request.POST.get("BB")
-        #inputNameBS = request.POST.get("NanemSS")
         inputNameBS = request.POST.get("NanemSS", "").strip()  # Получаем строку и убираем лишние пробелы
-        #print(inputNameBS)
-        #print(inputNameBS[:2])
-        #print(inputNameBS[2:])
-        # Готовим таблицы в виде json:
+        #print(f"+ Add str object inputNameBS from input:\n {inputNameBS}\n{inputNameBS[:2]}\n{inputNameBS[2:]}")
         #inputReg, inputNumber, listMain = funcNokiaList(inputNameBS[:2], str(int(inputNameBS[2:])), listMain)# str(int(inputNameBS[2:])) используется для того что бы учесть нули в комере БС 000x
-        # Проверяем: если поле пустое или в нем меньше 3 символов (например, ввели только "IR")
+        #print(f"... Checking for completion inputNameBS from input {inputNameBS}")
         if not inputNameBS or len(inputNameBS) < 3:
-            # Создаем контекст с ошибкой и сразу отдаем страницу, не ломая сервер
             combined_context = {
                 "jsonContents": jsonContents,
                 "listMain": listMain,
-                "error_message": "Пожалуйста, введите корректное имя БС (например, IR2664)"
+                "error_message": "Please enter a valid BS name (for example, IR2664)."
             }
+            print(f"- Please enter a valid BS name (for example, IR2664).")
             return render(request, "pageNokia.html", combined_context)
-        # Если проверка прошла, безопасно обрабатываем имя БС
         try:
             inputReg = inputNameBS[:2]
-            inputNumber = str(int(inputNameBS[2:]))  # Теперь здесь не будет ошибки, так как цифры точно есть
-            # Вызываем нашу обновленную быструю функцию
+            inputNumber = str(int(inputNameBS[2:]))
+            #print(f"+ Add str objects inputReg and inputNumber from input:\n {inputReg}\n {inputNumber}")
             inputReg, inputNumber, listMain = funcNokiaList(inputReg, inputNumber, listMain)
+            #print(f"+ Add list listMain:\n {listMain}")
         except ValueError:
-            # На случай, если пользователь ввел буквы там, где должны быть цифры (например, "IRabcd")
             combined_context = {
                 "jsonContents": jsonContents,
                 "listMain": listMain,
                 "error_message": "Неверный формат имени БС. После букв должны идти цифры."
             }
+            print("- Invalid BS name format. Numbers should follow the letters.")
             return render(request, "pageNokia.html", combined_context)
-        #print(listMain)
-        # Тестируем список:
         #listMain, indexList = funcTestingOutList(listMain, 1)
-    # Собираем JSONs:
+        #print(f"+ Add list indexList for test: {indexList}")
     combined_context = {
         **{"jsonContents": jsonContents},
         **{"listMain": listMain},
-        }
+    }
+    #print(f"Add dict combined_context Json formats: {combined_context}")
     return render(request, "pageNokia.html", combined_context)
 def funcEricsson(request):
     jsonContents = {}
     listMain = []
-
-    #Получаем данные из Админки
     #listContents = Content.objects.all()
-    listContents = Content.objects.only('id', 'title', 'idcard', 'idmenu', 'author', 'date')
+    listContents = Content.objects.only('id', 'title', 'idcard', 'idmenu', 'author', 'date', 'content')
+    print(f"+ Add list listContents for Admin-Panel:\n {listContents}")
     for raw in listContents:
         if raw.idmenu not in jsonContents:
             jsonContents[raw.idmenu] = []
@@ -4029,30 +3984,45 @@ def funcEricsson(request):
             "author": raw.author,
             "date": raw.date
         })
-
-    # Получаем данные из Общих страниц
+    print(f"+ Add dict jsonContents:\n {jsonContents}")
     if request.method == "POST":
-        # Готовим данные которые ввел пользователь на странице:
-        #inputReg = request.POST.get("Reg")
-        #inputNumber = request.POST.get("NS")
-        #inputBB = request.POST.get("BB")
-        inputNameBS = request.POST.get("NanemSS")
-        #print(inputNameBS)
-        #print(inputNameBS[:2])
-        #print(inputNameBS[2:])
-        #print(inputNameBS[2:6])
-        #print(inputNameBS[6:])
-        # Готовим таблицы в виде json:
-        inputReg, inputNumber, inputBand, listMain = funcEricssonList(inputNameBS[:2], str(int(inputNameBS[2:6])), inputNameBS[6:], listMain)# str(int(inputNameBS[2:])) используется для того что бы учесть нули в комере БС 000x
-        #print(listMain)
-        # Тестируем список:
+        #inputNameBS = request.POST.get("NanemSS")
+        inputNameBS = request.POST.get("NanemSS", "").strip()  # Получаем строку и убираем лишние пробелы
+        print(f"+ Add str object inputNameBS from input:\n {inputNameBS}\n {inputNameBS[:2]}\n {inputNameBS[2:6]}\n {inputNameBS[6:]}")
+        #inputReg, inputNumber, inputBand, listMain = funcEricssonList(inputNameBS[:2], str(int(inputNameBS[2:6])), inputNameBS[6:], listMain)
+        print(f"... Checking for completion inputNameBS from input {inputNameBS}")
+        if not inputNameBS or len(inputNameBS) < 3:
+            combined_context = {
+                "jsonContents": jsonContents,
+                "listMain": listMain,
+                "error_message": "Please enter a valid BS name (for example, IR2664)."
+            }
+            print(f"- Please enter a valid BS name (for example, IR2664).")
+            return render(request, "pageEricsson.html", combined_context)
+        try:
+            inputReg = inputNameBS[:2]
+            inputNumber = str(int(inputNameBS[2:6]))
+            inputBand = inputNameBS[6:]
+            print(f"+ Add str objects inputReg and inputNumber from input:\n {inputReg}\n {inputNumber}\n {inputBand}")
+            inputReg, inputNumber, inputBand, listMain = funcEricssonList(
+                inputReg, inputNumber, inputBand, listMain
+            )
+            print(f"+ Add list listMain:\n {listMain}")
+        except ValueError:
+            combined_context = {
+                "jsonContents": jsonContents,
+                "listMain": listMain,
+                "error_message": "Неверный формат имени БС. После букв должны идти цифры."
+            }
+            print("- Invalid BS name format. Numbers should follow the letters.")
+            return render(request, "pageEricsson.html", combined_context)
         #listMain, indexList = funcTestingOutList(listMain, 1)
-
-    # Собираем JSONs:
+        # print(f"+ Add list indexList for test: {indexList}")
     combined_context = {
         **{"jsonContents": jsonContents},
         **{"listMain": listMain},
-        }
+    }
+    print(f"Add dict combined_context Json formats: {combined_context}")
     return render(request, "pageEricsson.html", combined_context)
 def funcUpdateDbInfo(request):
     jsonContents = {}
